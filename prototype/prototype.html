@@ -1,0 +1,544 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>フリック数式パッド</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* レイアウト: 広い画面は「出力 | キーパッド」の2列、狭い画面は縦積み。キーの大きさは --key-h で一括調整 */
+:root{
+  --paper:#EEF3F4; --surface:#FFFFFF; --ink:#0D1D24; --muted:#4A5F68; --line:#AFC0C7;
+  --accent:#0B6B86; --accent-ink:#FFFFFF; --accent-soft:#D5EAF0; --caret:#C2410C; --warn:#9A3412;
+  --f-ui:"BIZ UDPGothic","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --f-code:"IBM Plex Mono",ui-monospace,"Consolas",monospace;
+  --key-h:84px; --radius:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E171B; --surface:#17242A; --ink:#E4EDF0; --muted:#9FB3BB; --line:#3A4D55;
+  --accent:#5BC2DD; --accent-ink:#04161C; --accent-soft:#163A45; --caret:#FB923C; --warn:#FDBA74; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E171B; --surface:#17242A; --ink:#E4EDF0; --muted:#9FB3BB; --line:#3A4D55;
+  --accent:#5BC2DD; --accent-ink:#04161C; --accent-soft:#163A45; --caret:#FB923C; --warn:#FDBA74; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.6;padding-inline:16px;padding-block:16px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+h1{font-size:1.45rem;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:.92rem}
+.main{display:grid;gap:20px;grid-template-columns:1fr}
+@media (min-width:900px){.main{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start}.out{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}}
+.out,.pad{display:grid;gap:12px;min-width:0}
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:12px;min-width:0}
+.label{font-size:.78rem;letter-spacing:.06em;color:var(--muted);margin:0 0 6px;font-weight:700}
+#preview{min-height:96px;overflow-x:auto;display:flex;align-items:center;justify-content:center;font-size:1.25rem;padding:8px 0}
+#preview .ph{color:var(--muted);font-size:.95rem}
+textarea{width:100%;min-height:88px;resize:vertical;font-family:var(--f-code);font-size:1rem;line-height:1.5;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:10px}
+.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+button{font-family:inherit;color:inherit}
+.act{min-height:calc(var(--key-h)*.66);font-size:1rem;font-weight:700;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);cursor:pointer;padding:4px}
+.act.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.act:active{transform:translateY(1px)}
+:focus-visible{outline:4px solid var(--caret);outline-offset:2px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{flex:1 1 auto;min-height:52px;font-size:1rem;font-weight:700;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 16px;cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.toolbar .hint{font-size:.85rem;color:var(--muted)}
+.edit-toggle{min-height:44px;padding:4px 14px;border:1.5px dashed var(--line);background:transparent;border-radius:8px;font-weight:700;cursor:pointer}
+.edit-toggle[aria-pressed="true"]{border-style:solid;border-color:var(--warn);color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.key{position:relative;height:var(--key-h);background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;padding:0;overflow:hidden}
+.key .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(15px,calc(var(--key-h)*.27),40px);line-height:1;padding:0 18%;text-align:center}
+.key .d{position:absolute;font-size:clamp(10px,calc(var(--key-h)*.14),19px);color:var(--muted);line-height:1.1;white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:clip}
+.key .u{top:5%;left:50%;transform:translateX(-50%)}
+.key .dn{bottom:5%;left:50%;transform:translateX(-50%)}
+.key .l{left:5%;top:50%;transform:translateY(-50%)}
+.key .r{right:5%;top:50%;transform:translateY(-50%)}
+.nolabels .key .d{display:none}
+.key.on{background:var(--accent-soft);border-color:var(--accent)}
+.key .d.hit{color:var(--accent);font-weight:700}
+.editing .key{border-style:dashed;border-color:var(--warn)}
+.key.empty .c{color:var(--muted);font-weight:400;font-size:clamp(12px,calc(var(--key-h)*.16),18px)}
+#bubble{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--paper);font-weight:700;font-size:1.6rem;padding:8px 18px;border-radius:12px;transform:translate(-50%,-100%);white-space:nowrap}
+dialog{border:1.5px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:16px;width:min(560px,calc(100vw - 32px))}
+dialog::backdrop{background:rgb(0 0 0 / .45)}
+dialog h2{font-size:1.1rem;margin:0 0 12px}
+.cross{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cross .opt{min-height:calc(var(--key-h)*.95);font-size:1.25rem;font-weight:700;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius);cursor:pointer;padding:4px}
+.cross .opt small{display:block;font-size:.72rem;font-weight:400;color:var(--muted)}
+.cross .gap{visibility:hidden}
+.drow{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.edit-rows{display:grid;gap:10px}
+.edit-row{display:grid;grid-template-columns:3.2em minmax(0,1fr) minmax(0,2fr);gap:8px;align-items:center}
+.edit-row b{font-size:.9rem}
+input[type=text]{width:100%;min-width:0;font-size:1rem;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+input.code{font-family:var(--f-code)}
+details{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:0 14px}
+summary{cursor:pointer;font-weight:700;min-height:48px;display:flex;align-items:center}
+details[open]{padding-bottom:14px}
+.set{display:grid;gap:14px}
+.set label{display:grid;gap:4px;font-size:.95rem}
+.set .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:36px}
+.val{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
+.howto ol{margin:0;padding-left:1.3em}
+.howto li{margin-bottom:4px}
+code{font-family:var(--f-code);font-size:.9em;background:var(--paper);padding:1px 5px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.act:active{transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>フリック数式パッド</h1>
+    <p>試作版。大きなキーをフリックしてLaTeXを組み立て、Wordなどに貼り付けます。</p>
+  </header>
+
+  <div class="main">
+    <section class="out" aria-label="入力した数式">
+      <div class="panel">
+        <p class="label" id="pv-label">プレビュー（赤い縦線がカーソル位置）</p>
+        <div id="preview" aria-labelledby="pv-label"><span class="ph">数式の表示を準備しています…</span></div>
+      </div>
+      <div class="panel">
+        <label class="label" for="src">LaTeX（直接編集もできます）</label>
+        <textarea id="src" spellcheck="false" autocapitalize="off" autocomplete="off" inputmode="none" dir="ltr"></textarea>
+      </div>
+      <div class="actions" role="group" aria-label="編集操作">
+        <button class="act" id="b-left" type="button">← 左へ</button>
+        <button class="act" id="b-right" type="button">右へ →</button>
+        <button class="act" id="b-next" type="button">次の空欄 ⇥</button>
+        <button class="act" id="b-bs" type="button">1つ消す ⌫</button>
+        <button class="act" id="b-undo" type="button">取り消し ↶</button>
+        <button class="act primary" id="b-copy" type="button">コピー</button>
+      </div>
+      <p class="note">空欄 <code>{}</code> や行列の欄は「次の空欄」で順に移動できます。「すべて消す」は設定の中にあります。</p>
+    </section>
+
+    <section class="pad" aria-label="キーパッド">
+      <div class="tabs" id="tabs" role="group" aria-label="キーの種類"></div>
+      <div class="toolbar">
+        <span class="hint" id="mode-hint"></span>
+        <button class="edit-toggle" id="b-edit" type="button" aria-pressed="false">キーを編集</button>
+      </div>
+      <div class="grid" id="grid"></div>
+
+      <details>
+        <summary>設定（キーの大きさ・フリックの距離・誤入力防止）</summary>
+        <div class="set">
+          <label>キーの高さ <span class="val" id="v-keyh"></span>
+            <input type="range" id="s-keyh" min="56" max="150" step="2"></label>
+          <label>フリックと判定する距離 <span class="val" id="v-dist"></span>
+            <input type="range" id="s-dist" min="12" max="100" step="2"></label>
+          <label>連続タッチを無視する時間 <span class="val" id="v-guard"></span>
+            <input type="range" id="s-guard" min="0" max="1000" step="50"></label>
+          <fieldset class="row" style="border:0;padding:0;margin:0">
+            <legend style="margin-bottom:4px">操作方法</legend>
+            <label style="display:flex;gap:6px;align-items:center"><input type="radio" name="mode" value="flick" id="m-flick"> フリック</label>
+            <label style="display:flex;gap:6px;align-items:center"><input type="radio" name="mode" value="tap" id="m-tap"> タップして選ぶ（フリックが難しい人向け）</label>
+          </fieldset>
+          <div class="row">
+            <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="s-labels"> キーの四隅に候補を表示</label>
+            <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="s-tab-uni"> 「大学」タブを表示</label>
+            <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="s-tab-my"> 「マイキー」タブを表示</label>
+          </div>
+          <div>
+            <p class="label">カスタマイズの書き出し・読み込み（別の端末へ移すとき）</p>
+            <textarea id="io" spellcheck="false" style="min-height:70px" aria-label="カスタマイズのデータ"></textarea>
+            <div class="drow" style="justify-content:flex-start">
+              <button class="act" id="b-export" type="button" style="min-height:44px;padding:4px 14px">書き出す</button>
+              <button class="act" id="b-import" type="button" style="min-height:44px;padding:4px 14px">読み込む</button>
+              <button class="act" id="b-resetall" type="button" style="min-height:44px;padding:4px 14px">キーをすべて初期状態へ</button>
+              <button class="act" id="b-clear" type="button" style="min-height:44px;padding:4px 14px">数式をすべて消す</button>
+            </div>
+            <p class="note" id="io-msg" role="status"></p>
+          </div>
+        </div>
+      </details>
+
+      <details class="howto">
+        <summary>Wordで数式にする方法</summary>
+        <ol>
+          <li>Wordで <kbd>Alt</kbd>＋<kbd>=</kbd> を押して数式を挿入します。</li>
+          <li>「数式」タブの「変換」グループで <b>LaTeX</b> を選びます。</li>
+          <li>このページで「コピー」したものを貼り付け、「変換」→「すべて - 2次元形式」を押します。</li>
+        </ol>
+        <p class="note">PowerPoint、Overleaf、Teamsのチャット（LaTeX対応時）でも同じLaTeXが使えます。製品版ではコピーを省き、Wordへ直接入力する予定です。</p>
+      </details>
+    </section>
+  </div>
+</div>
+
+<div id="bubble" hidden aria-hidden="true"></div>
+<div class="sr" id="live" aria-live="polite"></div>
+
+<dialog id="chooser" aria-labelledby="ch-title">
+  <h2 id="ch-title">入力する記号を選んでください</h2>
+  <div class="cross" id="cross"></div>
+  <div class="drow"><button class="act" type="button" id="ch-cancel" style="min-height:52px;padding:4px 20px">やめる</button></div>
+</dialog>
+
+<dialog id="editor" aria-labelledby="ed-title">
+  <h2 id="ed-title">キーを編集</h2>
+  <p class="note" style="margin-bottom:10px">左は表示名、右は入力されるLaTeX。<code>¶</code> を入れると、そこにカーソルが置かれます。</p>
+  <div class="edit-rows" id="ed-rows"></div>
+  <div class="drow">
+    <button class="act" type="button" id="ed-reset" style="min-height:48px;padding:4px 14px">このキーを初期状態へ</button>
+    <button class="act" type="button" id="ed-cancel" style="min-height:48px;padding:4px 14px">やめる</button>
+    <button class="act primary" type="button" id="ed-save" style="min-height:48px;padding:4px 18px">保存</button>
+  </div>
+</dialog>
+
+<script>
+window.MathJax={tex:{packages:{'[+]':['ams','color','boldsymbol']}},svg:{fontCache:'global'},startup:{typeset:false}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js" async id="mjx"></script>
+<script>
+(function(){
+const R=String.raw;
+const DIRS=['c','u','r','d','l'];
+const DIRNAME={c:'中央',u:'上',r:'右',d:'下',l:'左'};
+// k(中央,上,右,下,左)  各要素は [表示, LaTeX]。¶ はカーソル位置
+const k=(c,u,r,d,l)=>({c,u,r,d,l});
+
+const TABS=[
+ {id:'basic',name:'基本',keys:[
+  k(['7','7'],['(','('],[')',')'],['[','['],[']',']']),
+  k(['8','8'],['x','x'],['y','y'],['z','z'],['t','t']),
+  k(['9','9'],['a','a'],['b','b'],['c','c'],['d','d']),
+  k(['+','+'],['−','-'],['×',R`\times `],['÷',R`\div `],['±',R`\pm `]),
+  k(['4','4'],['n','n'],['m','m'],['k','k'],['r','r']),
+  k(['5','5'],['f','f'],['g','g'],['h','h'],['p','p']),
+  k(['6','6'],['π',R`\pi `],['θ',R`\theta `],['α',R`\alpha `],['β',R`\beta `]),
+  k(['=','='],['<','<'],['>','>'],['≦',R`\leqq `],['≧',R`\geqq `]),
+  k(['1','1'],['x²','^{2}'],['xⁿ','^{¶}'],['xₙ','_{¶}'],['√',R`\sqrt{¶}`]),
+  k(['2','2'],['分数',R`\frac{¶}{}`],['ⁿ√',R`\sqrt[¶]{}`],['|x|',R`\left|¶\right|`],['( )',R`\left(¶\right)`]),
+  k(['3','3'],['∞',R`\infty `],['→',R`\to `],['⇒',R`\Rightarrow `],['⇔',R`\Leftrightarrow `]),
+  k([',',','],['≠',R`\neq `],['≈',R`\approx `],['∴',R`\therefore `],['…',R`\cdots `]),
+  k(['0','0'],['.','.'],['!','!'],['°',R`^{\circ}`],["'","'"]),
+  k(['A','A'],['B','B'],['C','C'],['P','P'],['Q','Q']),
+  k(['γ',R`\gamma `],['δ',R`\delta `],['λ',R`\lambda `],['ω',R`\omega `],['φ',R`\varphi `]),
+  k(['空白',R`\ `],['改行',R`\\ `],['{ }','{¶}'],['文字',R`\text{¶}`],['・',R`\cdot `])
+ ]},
+ {id:'exam',name:'入試',keys:[
+  k(['sin',R`\sin `],['cos',R`\cos `],['tan',R`\tan `],['sin²',R`\sin^{2} `],['cos²',R`\cos^{2} `]),
+  k(['log',R`\log `],['logₐ',R`\log_{¶} `],['eˣ','e^{¶}'],['log₁₀',R`\log_{10} `],['log₂',R`\log_{2} `]),
+  k(['lim',R`\lim_{¶} `],['n→∞',R`\lim_{n\to\infty} `],['x→a',R`\lim_{x\to ¶} `],['x→0',R`\lim_{x\to 0} `],['x→∞',R`\lim_{x\to\infty} `]),
+  k(['∫',R`\int `],['∫ₐᵇ',R`\int_{¶}^{} `],['dx',R`\,dx`],['[ ]ₐᵇ',R`\left[¶\right]_{}^{}`],['dt',R`\,dt`]),
+  k(['Σ',R`\sum_{k=1}^{n} `],['Σ空欄',R`\sum_{¶}^{} `],['aₙ','a_{n}'],['aₙ₊₁','a_{n+1}'],['Sₙ','S_{n}']),
+  k(["f(x)",'f(x)'],["f'(x)","f'(x)"],["f''(x)","f''(x)"],['dy/dx',R`\frac{dy}{dx}`],['d/dx',R`\frac{d}{dx}`]),
+  k(['a⃗',R`\vec{¶}`],['AB⃗',R`\overrightarrow{¶}`],['|a⃗|',R`\left|\vec{¶}\right|`],['内積・',R`\cdot `],['⊥',R`\perp `]),
+  k(['△',R`\triangle `],['∠',R`\angle `],['∥',R`\parallel `],['≡',R`\equiv `],['∽',R`\backsim `]),
+  k(['∈',R`\in `],['⊂',R`\subset `],['∪',R`\cup `],['∩',R`\cap `],['∅',R`\emptyset `]),
+  k(['A̅',R`\overline{¶}`],['∉',R`\notin `],['⊃',R`\supset `],['n(A)','n(A)'],['∋',R`\ni `]),
+  k(['ₙCᵣ',R`{}_{¶}\mathrm{C}_{}`],['ₙPᵣ',R`{}_{¶}\mathrm{P}_{}`],['n!','n!'],['P(A)','P(A)'],['E(X)','E(X)']),
+  k(['i','i'],['z̄',R`\overline{z}`],['|z|',R`\left|z\right|`],['arg',R`\arg `],['V(X)','V(X)']),
+  k(['場合分け',R`\begin{cases} ¶ & \\ & \end{cases}`],['連立',R`\left\{\begin{array}{l} ¶ \\ \end{array}\right.`],['&','& '],['改行',R`\\ `],['かつ',R`\text{ かつ }`]),
+  k(['( )',R`\left(¶\right)`],['{ }',R`\left\{¶\right\}`],['[ ]',R`\left[¶\right]`],['| |',R`\left|¶\right|`],['√ ',R`\sqrt{¶}`]),
+  k(['π/2',R`\frac{\pi}{2}`],['π/3',R`\frac{\pi}{3}`],['π/4',R`\frac{\pi}{4}`],['π/6',R`\frac{\pi}{6}`],['2π',R`2\pi `]),
+  k(['√2',R`\sqrt{2}`],['√3',R`\sqrt{3}`],['e','e'],['%',R`\%`],['単位',R`\,\mathrm{¶}`])
+ ]},
+ {id:'uni',name:'大学',keys:[
+  k(['∂',R`\partial `],['∂/∂x',R`\frac{\partial ¶}{\partial x}`],['∂²/∂x²',R`\frac{\partial^{2} ¶}{\partial x^{2}}`],['∇',R`\nabla `],['Δ',R`\Delta `]),
+  k(['∬',R`\iint `],['∭',R`\iiint `],['∮',R`\oint `],['∫±∞',R`\int_{-\infty}^{\infty} `],['dxdy',R`\,dx\,dy`]),
+  k(['行列2',R`\begin{pmatrix} ¶ & \\ & \end{pmatrix}`],['行列3',R`\begin{pmatrix} ¶ & & \\ & & \\ & & \end{pmatrix}`],['|行列|',R`\begin{vmatrix} ¶ & \\ & \end{vmatrix}`],['縦ベクトル',R`\begin{pmatrix} ¶ \\ \end{pmatrix}`],['[行列]',R`\begin{bmatrix} ¶ & \\ & \end{bmatrix}`]),
+  k(['Aᵀ',R`^{\top}`],['A⁻¹','^{-1}'],['det',R`\det `],['tr',R`\operatorname{tr} `],['rank',R`\operatorname{rank} `]),
+  k(['ℝ',R`\mathbb{R}`],['ℂ',R`\mathbb{C}`],['ℕ',R`\mathbb{N}`],['ℤ',R`\mathbb{Z}`],['ℚ',R`\mathbb{Q}`]),
+  k(['∀',R`\forall `],['∃',R`\exists `],['¬',R`\lnot `],['∧',R`\land `],['∨',R`\lor `]),
+  k(['⊆',R`\subseteq `],['⊇',R`\supseteq `],['∖',R`\setminus `],['×',R`\times `],['∘',R`\circ `]),
+  k(['↦',R`\mapsto `],['⟶',R`\longrightarrow `],['≅',R`\cong `],['≃',R`\simeq `],['∝',R`\propto `]),
+  k(['ε',R`\varepsilon `],['δ',R`\delta `],['μ',R`\mu `],['σ',R`\sigma `],['ρ',R`\rho `]),
+  k(['Ω',R`\Omega `],['Γ',R`\Gamma `],['Λ',R`\Lambda `],['Σ',R`\Sigma `],['Φ',R`\Phi `]),
+  k(['sup',R`\sup `],['inf',R`\inf `],['max',R`\max `],['min',R`\min `],['limsup',R`\limsup `]),
+  k(['exp',R`\exp `],['ln',R`\ln `],['sinh',R`\sinh `],['cosh',R`\cosh `],['arctan',R`\arctan `]),
+  k(['⟨ ⟩',R`\langle ¶ \rangle `],['‖ ‖',R`\left\| ¶ \right\|`],['⌊ ⌋',R`\lfloor ¶ \rfloor `],['⌈ ⌉',R`\lceil ¶ \rceil `],['{ | }',R`\left\{ ¶ \,\middle|\, \right\}`]),
+  k(['x̂',R`\hat{¶}`],['ẋ',R`\dot{¶}`],['ẍ',R`\ddot{¶}`],['x̃',R`\tilde{¶}`],['太字x',R`\boldsymbol{¶}`]),
+  k(['Σᵢ',R`\sum_{i=1}^{n} `],['Σ∞',R`\sum_{n=1}^{\infty} `],['∏',R`\prod_{¶}^{} `],['⊕',R`\oplus `],['⊗',R`\otimes `]),
+  k(['≈',R`\approx `],['≡',R`\equiv `],['∼',R`\sim `],['≪',R`\ll `],['≫',R`\gg `])
+ ]},
+ {id:'my',name:'マイキー',keys:[
+  k(['(1)',R`(1)\ `],['(2)',R`(2)\ `],['(3)',R`(3)\ `],['(4)',R`(4)\ `],['(5)',R`(5)\ `]),
+  k(['y=','y='],['f(x)=','f(x)='],['x=','x='],['aₙ=','a_{n}='],['S=','S=']),
+  k(['△ABC',R`\triangle ABC`],['∠A',R`\angle A`],['AB','AB'],['BC','BC'],['CA','CA']),
+  k(['よって',R`\text{よって }`],['ゆえに',R`\text{ゆえに }`],['したがって',R`\text{したがって }`],['ただし',R`\text{ただし }`],['(答)',R`\quad(\text{答})`]),
+  k(null,null,null,null,null),k(null,null,null,null,null),k(null,null,null,null,null),k(null,null,null,null,null)
+ ]}
+];
+
+// ---- 保存（使えない環境でも動くように） ----
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const DEF={keyh:84,dist:30,guard:150,mode:'flick',labels:true,uni:true,my:true,tab:'basic'};
+let S=Object.assign({},DEF,store.get('fsp.settings',{}));
+let custom=store.get('fsp.custom',{});
+const saveS=()=>store.set('fsp.settings',S);
+const saveC=()=>store.set('fsp.custom',custom);
+const keyOf=(tab,i)=>custom[tab+':'+i]||TABS.find(t=>t.id===tab).keys[i];
+
+// ---- 要素 ----
+const $=id=>document.getElementById(id);
+const src=$('src'),grid=$('grid'),tabsEl=$('tabs'),bubble=$('bubble'),live=$('live'),preview=$('preview');
+let editing=false;
+const undo=[];
+
+function announce(t){live.textContent='';setTimeout(()=>live.textContent=t,30)}
+function pushUndo(){undo.push({v:src.value,s:src.selectionStart,e:src.selectionEnd});if(undo.length>200)undo.shift()}
+function setVal(v,caret){src.value=v;src.setSelectionRange(caret,caret);render()}
+
+function insert(tex,label){
+  pushUndo();
+  const v=src.value,s=src.selectionStart,e=src.selectionEnd,sel=v.slice(s,e);
+  let t=tex,pos;
+  const m=t.indexOf('¶');
+  if(m>=0){t=t.slice(0,m)+sel+t.slice(m+1);pos=s+m+sel.length}
+  else{pos=s+t.length}
+  setVal(v.slice(0,s)+t+v.slice(e),pos);
+  announce('入力：'+label);
+}
+function moveCaret(d){const p=Math.max(0,Math.min(src.value.length,src.selectionStart+d));src.setSelectionRange(p,p);render()}
+function nextBlank(){
+  const v=src.value,from=src.selectionStart;
+  const cands=[];
+  let i=v.indexOf('{}',from);if(i>=0)cands.push(i+1);
+  i=v.indexOf('[]',from);if(i>=0)cands.push(i+1);
+  i=v.indexOf('& ',from);if(i>=0)cands.push(i+2);
+  i=v.indexOf('\\\\ ',from);if(i>=0)cands.push(i+3);
+  const p=cands.length?Math.min(...cands):v.length;
+  src.setSelectionRange(p,p);render();announce(cands.length?'次の空欄へ移動':'最後へ移動');
+}
+function backspace(){
+  const v=src.value,s=src.selectionStart,e=src.selectionEnd;
+  if(s!==e){pushUndo();setVal(v.slice(0,s)+v.slice(e),s);return}
+  if(s===0)return;
+  pushUndo();
+  const before=v.slice(0,s);
+  let n=1;
+  const cmd=before.match(/\\[a-zA-Z]+ ?$/);
+  if(cmd)n=cmd[0].length;
+  else if(before.endsWith('{')&&v[s]==='}'){setVal(v.slice(0,s-1)+v.slice(s+1),s-1);return}
+  setVal(v.slice(0,s-n)+v.slice(s),s-n);
+  announce('1つ消しました');
+}
+
+// ---- プレビュー ----
+let mjReady=false;
+function render(){
+  if(!mjReady)return;
+  const v=src.value;
+  preview.innerHTML='';
+  if(!v.trim()){preview.innerHTML='<span class="ph">キーを押すと、ここに数式が表示されます</span>';return}
+  const p=src.selectionStart;
+  const withCaret=v.slice(0,p)+R`{\color{red}{|}}`+v.slice(p);
+  let node=null;
+  try{node=MathJax.tex2svg(withCaret,{display:true});if(node.querySelector('[data-mml-node="merror"]'))node=null}catch(e){node=null}
+  if(!node){try{node=MathJax.tex2svg(v,{display:true})}catch(e){node=null}}
+  if(node)preview.appendChild(node);
+  else preview.innerHTML='<span class="ph">入力途中のため表示できません</span>';
+}
+const mjx=$('mjx');
+function mjInit(){if(window.MathJax&&MathJax.startup&&MathJax.startup.promise){MathJax.startup.promise.then(()=>{mjReady=true;render()})}}
+mjx.addEventListener('load',mjInit);
+mjx.addEventListener('error',()=>{preview.innerHTML='<span class="ph">数式の表示を読み込めませんでした。LaTeXの入力とコピーは使えます。</span>'});
+if(window.MathJax&&MathJax.startup)mjInit();
+
+// ---- タブ ----
+function visibleTabs(){return TABS.filter(t=>t.id==='basic'||t.id==='exam'||(t.id==='uni'&&S.uni)||(t.id==='my'&&S.my))}
+function drawTabs(){
+  const vt=visibleTabs();
+  if(!vt.find(t=>t.id===S.tab))S.tab='basic';
+  tabsEl.innerHTML='';
+  vt.forEach(t=>{
+    const b=document.createElement('button');b.type='button';b.className='tab';b.textContent=t.name;
+    b.setAttribute('aria-pressed',String(t.id===S.tab));
+    b.addEventListener('click',()=>{S.tab=t.id;saveS();drawTabs();drawGrid();announce(t.name+'のキーに切り替えました')});
+    tabsEl.appendChild(b);
+  });
+}
+
+// ---- キー ----
+function drawGrid(){
+  const tab=TABS.find(t=>t.id===S.tab);
+  grid.innerHTML='';
+  tab.keys.forEach((_,i)=>{
+    const key=keyOf(tab.id,i);
+    const b=document.createElement('button');b.type='button';b.className='key';b.dataset.i=i;
+    const has=DIRS.some(d=>key[d]);
+    if(!has){b.classList.add('empty');b.innerHTML='<span class="c">空き</span>';b.setAttribute('aria-label','空きキー。キーを編集で登録できます');}
+    else{
+      const c=key.c||key.u||key.r||key.d||key.l;
+      let h='<span class="c">'+esc(c[0])+'</span>';
+      [['u','u'],['r','r'],['d','dn'],['l','l']].forEach(([d,cls])=>{if(key[d])h+='<span class="d '+cls+'" data-d="'+d+'">'+esc(key[d][0])+'</span>'});
+      b.innerHTML=h;
+      b.setAttribute('aria-label',DIRS.filter(d=>key[d]).map(d=>DIRNAME[d]+' '+key[d][0]).join('、'));
+    }
+    attachKey(b,tab.id,i);
+    grid.appendChild(b);
+  });
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+let lastAt=0,active=null;
+function dirFrom(dx,dy){
+  if(Math.hypot(dx,dy)<S.dist)return 'c';
+  return Math.abs(dx)>Math.abs(dy)?(dx>0?'r':'l'):(dy<0?'u':'d');
+}
+function attachKey(b,tab,i){
+  let suppressClick=false;
+  b.addEventListener('pointerdown',ev=>{
+    if(active||editing)return;
+    if(ev.button!==undefined&&ev.button!==0)return;
+    if(Date.now()-lastAt<S.guard){active={ignored:true,id:ev.pointerId,b};return}
+    const key=keyOf(tab,i);
+    if(!DIRS.some(d=>key[d]))return;
+    active={id:ev.pointerId,x:ev.clientX,y:ev.clientY,dir:'c',b,key,moved:false};
+    try{b.setPointerCapture(ev.pointerId)}catch(e){}
+    b.classList.add('on');showBubble(b,key,'c');
+  });
+  b.addEventListener('pointermove',ev=>{
+    if(!active||active.ignored||active.id!==ev.pointerId)return;
+    const d=dirFrom(ev.clientX-active.x,ev.clientY-active.y);
+    if(d!=='c')active.moved=true;
+    if(d!==active.dir){active.dir=d;showBubble(b,active.key,d)}
+  });
+  const end=(ev,cancel)=>{
+    if(!active||active.id!==ev.pointerId)return;
+    const a=active;active=null;
+    b.classList.remove('on');hideBubble();
+    b.querySelectorAll('.hit').forEach(x=>x.classList.remove('hit'));
+    if(a.ignored||cancel)return;
+    suppressClick=true;
+    const key=a.key;
+    if(S.mode==='tap'&&!a.moved&&DIRS.filter(d=>key[d]).length>1){openChooser(key);return}
+    const item=key[a.dir]||(a.dir==='c'?(key.u||key.r||key.d||key.l):null);
+    if(item){insert(item[1],item[0]);lastAt=Date.now()}
+  };
+  b.addEventListener('pointerup',ev=>end(ev,false));
+  b.addEventListener('pointercancel',ev=>end(ev,true));
+  b.addEventListener('click',ev=>{
+    if(editing){openEditor(tab,i);return}
+    if(suppressClick){suppressClick=false;return}
+    // キーボード（Enter/Space）やスイッチ操作からのクリック
+    const key=keyOf(tab,i);
+    const n=DIRS.filter(d=>key[d]).length;
+    if(n===0)return;
+    if(n===1){const it=key[DIRS.find(d=>key[d])];insert(it[1],it[0]);return}
+    openChooser(key);
+  });
+}
+function showBubble(b,key,d){
+  const it=key[d];
+  b.querySelectorAll('.d').forEach(x=>x.classList.toggle('hit',x.dataset.d===d));
+  if(!it){bubble.hidden=true;return}
+  const r=b.getBoundingClientRect();
+  bubble.textContent=it[0];
+  bubble.style.left=(r.left+r.width/2)+'px';
+  bubble.style.top=Math.max(48,r.top-8)+'px';
+  bubble.hidden=false;
+}
+function hideBubble(){bubble.hidden=true}
+
+// ---- タップして選ぶ ----
+const chooser=$('chooser'),cross=$('cross');
+function openChooser(key){
+  cross.innerHTML='';
+  const layout=[null,'u',null,'l','c','r',null,'d',null];
+  let first=null;
+  layout.forEach(d=>{
+    const b=document.createElement('button');b.type='button';
+    if(!d||!key[d]){b.className='opt gap';b.tabIndex=-1;b.setAttribute('aria-hidden','true');cross.appendChild(b);return}
+    b.className='opt';b.innerHTML=esc(key[d][0])+'<small>'+DIRNAME[d]+'</small>';
+    b.addEventListener('click',()=>{chooser.close();insert(key[d][1],key[d][0]);lastAt=Date.now()});
+    if(d==='c'||!first)first=b;
+    cross.appendChild(b);
+  });
+  chooser.showModal();
+  if(first)first.focus();
+}
+$('ch-cancel').addEventListener('click',()=>chooser.close());
+
+// ---- 編集 ----
+const editor=$('editor'),edRows=$('ed-rows');
+let edTarget=null;
+function openEditor(tab,i){
+  edTarget={tab,i};
+  const key=keyOf(tab,i);
+  edRows.innerHTML='';
+  DIRS.forEach(d=>{
+    const row=document.createElement('div');row.className='edit-row';
+    const it=key[d]||['',''];
+    row.innerHTML='<b>'+DIRNAME[d]+'</b><input type="text" id="ed-'+d+'-l" aria-label="'+DIRNAME[d]+'の表示名" value="'+esc(it[0])+'"><input type="text" class="code" id="ed-'+d+'-t" aria-label="'+DIRNAME[d]+'のLaTeX" value="'+esc(it[1])+'" spellcheck="false" autocapitalize="off">';
+    edRows.appendChild(row);
+  });
+  editor.showModal();
+  $('ed-c-l').focus();
+}
+$('ed-save').addEventListener('click',()=>{
+  const nk={};
+  DIRS.forEach(d=>{const l=$('ed-'+d+'-l').value.trim(),t=$('ed-'+d+'-t').value;nk[d]=(l||t)?[l||t,t||l]:null});
+  custom[edTarget.tab+':'+edTarget.i]=nk;saveC();editor.close();drawGrid();announce('キーを保存しました');
+});
+$('ed-reset').addEventListener('click',()=>{delete custom[edTarget.tab+':'+edTarget.i];saveC();editor.close();drawGrid();announce('キーを初期状態に戻しました')});
+$('ed-cancel').addEventListener('click',()=>editor.close());
+$('b-edit').addEventListener('click',e=>{
+  editing=!editing;e.currentTarget.setAttribute('aria-pressed',String(editing));
+  e.currentTarget.textContent=editing?'編集を終える':'キーを編集';
+  grid.classList.toggle('editing',editing);updateHint();
+  announce(editing?'編集モード。変えたいキーを押してください':'編集モードを終了しました');
+});
+
+// ---- 操作ボタン ----
+$('b-left').addEventListener('click',()=>moveCaret(-1));
+$('b-right').addEventListener('click',()=>moveCaret(1));
+$('b-next').addEventListener('click',nextBlank);
+$('b-bs').addEventListener('click',backspace);
+$('b-undo').addEventListener('click',()=>{const u=undo.pop();if(!u){announce('取り消せる操作はありません');return}src.value=u.v;src.setSelectionRange(u.s,u.e);render();announce('1つ前に戻しました')});
+$('b-copy').addEventListener('click',()=>{
+  const t=src.value;
+  const ok=()=>announce('コピーしました'),fb=()=>{src.focus();src.select();announce('選択しました。Ctrl＋Cでコピーしてください')};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,fb)}else fb();
+  const b=$('b-copy');b.textContent='コピーしました';setTimeout(()=>b.textContent='コピー',1500);
+});
+$('b-clear').addEventListener('click',()=>{if(!src.value)return;pushUndo();setVal('',0);announce('数式をすべて消しました。取り消しで戻せます')});
+src.addEventListener('input',render);
+['keyup','click','select'].forEach(ev=>src.addEventListener(ev,render));
+src.addEventListener('beforeinput',()=>pushUndo(),{capture:true});
+
+// ---- 設定 ----
+function applyS(){
+  document.documentElement.style.setProperty('--key-h',S.keyh+'px');
+  $('s-keyh').value=S.keyh;$('v-keyh').textContent=S.keyh+'px';
+  $('s-dist').value=S.dist;$('v-dist').textContent=S.dist+'px';
+  $('s-guard').value=S.guard;$('v-guard').textContent=S.guard===0?'なし':(S.guard/1000).toFixed(2)+'秒';
+  $('m-flick').checked=S.mode==='flick';$('m-tap').checked=S.mode==='tap';
+  $('s-labels').checked=S.labels;grid.classList.toggle('nolabels',!S.labels);
+  $('s-tab-uni').checked=S.uni;$('s-tab-my').checked=S.my;
+  updateHint();
+}
+function updateHint(){
+  $('mode-hint').textContent=editing?'変えたいキーを押すと編集できます':(S.mode==='flick'?'タップで中央、上下左右へずらすと四隅の記号':'タップすると候補が大きく表示されます');
+}
+$('s-keyh').addEventListener('input',e=>{S.keyh=+e.target.value;saveS();applyS()});
+$('s-dist').addEventListener('input',e=>{S.dist=+e.target.value;saveS();applyS()});
+$('s-guard').addEventListener('input',e=>{S.guard=+e.target.value;saveS();applyS()});
+document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',e=>{S.mode=e.target.value;saveS();applyS()}));
+$('s-labels').addEventListener('change',e=>{S.labels=e.target.checked;saveS();applyS()});
+$('s-tab-uni').addEventListener('change',e=>{S.uni=e.target.checked;saveS();drawTabs();drawGrid()});
+$('s-tab-my').addEventListener('change',e=>{S.my=e.target.checked;saveS();drawTabs();drawGrid()});
+$('b-export').addEventListener('click',()=>{$('io').value=JSON.stringify({settings:S,keys:custom});$('io-msg').textContent='書き出しました。この文字列を保存して、別の端末で「読み込む」に貼り付けてください。'});
+$('b-import').addEventListener('click',()=>{
+  try{const o=JSON.parse($('io').value);if(o.settings)S=Object.assign({},DEF,o.settings);if(o.keys)custom=o.keys;saveS();saveC();applyS();drawTabs();drawGrid();$('io-msg').textContent='読み込みました。'}
+  catch(e){$('io-msg').textContent='読み込めませんでした。書き出した文字列を、欠けないようにそのまま貼り付けてください。'}
+});
+let resetArmed=false;
+$('b-resetall').addEventListener('click',e=>{
+  if(!resetArmed){resetArmed=true;e.currentTarget.textContent='もう一度押すと初期化';setTimeout(()=>{resetArmed=false;e.currentTarget.textContent='キーをすべて初期状態へ'},4000);return}
+  resetArmed=false;custom={};saveC();drawGrid();e.currentTarget.textContent='キーをすべて初期状態へ';$('io-msg').textContent='すべてのキーを初期状態に戻しました。';
+});
+
+// ---- 初期表示（例） ----
+src.value=R`x=\frac{-b\pm\sqrt{b^{2}-4ac}}{2a}`;
+src.setSelectionRange(src.value.length,src.value.length);
+applyS();drawTabs();drawGrid();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,1246 @@
+{
+  "version": 1,
+  "placeholderRule": "#0 = カーソル位置（選択中の文字があればそこに入る）、#? = 空欄",
+  "tabs": [
+    {
+      "id": "basic",
+      "name": "基本",
+      "level": "common",
+      "columns": 4,
+      "keys": [
+        {
+          "id": "basic-01",
+          "c": {
+            "label": "7",
+            "latex": "7"
+          },
+          "u": {
+            "label": "(",
+            "latex": "("
+          },
+          "r": {
+            "label": ")",
+            "latex": ")"
+          },
+          "d": {
+            "label": "[",
+            "latex": "["
+          },
+          "l": {
+            "label": "]",
+            "latex": "]"
+          }
+        },
+        {
+          "id": "basic-02",
+          "c": {
+            "label": "8",
+            "latex": "8"
+          },
+          "u": {
+            "label": "x",
+            "latex": "x"
+          },
+          "r": {
+            "label": "y",
+            "latex": "y"
+          },
+          "d": {
+            "label": "z",
+            "latex": "z"
+          },
+          "l": {
+            "label": "t",
+            "latex": "t"
+          }
+        },
+        {
+          "id": "basic-03",
+          "c": {
+            "label": "9",
+            "latex": "9"
+          },
+          "u": {
+            "label": "a",
+            "latex": "a"
+          },
+          "r": {
+            "label": "b",
+            "latex": "b"
+          },
+          "d": {
+            "label": "c",
+            "latex": "c"
+          },
+          "l": {
+            "label": "d",
+            "latex": "d"
+          }
+        },
+        {
+          "id": "basic-04",
+          "c": {
+            "label": "+",
+            "latex": "+"
+          },
+          "u": {
+            "label": "−",
+            "latex": "-"
+          },
+          "r": {
+            "label": "×",
+            "latex": "\\times "
+          },
+          "d": {
+            "label": "÷",
+            "latex": "\\div "
+          },
+          "l": {
+            "label": "±",
+            "latex": "\\pm "
+          }
+        },
+        {
+          "id": "basic-05",
+          "c": {
+            "label": "4",
+            "latex": "4"
+          },
+          "u": {
+            "label": "n",
+            "latex": "n"
+          },
+          "r": {
+            "label": "m",
+            "latex": "m"
+          },
+          "d": {
+            "label": "k",
+            "latex": "k"
+          },
+          "l": {
+            "label": "r",
+            "latex": "r"
+          }
+        },
+        {
+          "id": "basic-06",
+          "c": {
+            "label": "5",
+            "latex": "5"
+          },
+          "u": {
+            "label": "f",
+            "latex": "f"
+          },
+          "r": {
+            "label": "g",
+            "latex": "g"
+          },
+          "d": {
+            "label": "h",
+            "latex": "h"
+          },
+          "l": {
+            "label": "p",
+            "latex": "p"
+          }
+        },
+        {
+          "id": "basic-07",
+          "c": {
+            "label": "6",
+            "latex": "6"
+          },
+          "u": {
+            "label": "π",
+            "latex": "\\pi "
+          },
+          "r": {
+            "label": "θ",
+            "latex": "\\theta "
+          },
+          "d": {
+            "label": "α",
+            "latex": "\\alpha "
+          },
+          "l": {
+            "label": "β",
+            "latex": "\\beta "
+          }
+        },
+        {
+          "id": "basic-08",
+          "c": {
+            "label": "=",
+            "latex": "="
+          },
+          "u": {
+            "label": "<",
+            "latex": "<"
+          },
+          "r": {
+            "label": ">",
+            "latex": ">"
+          },
+          "d": {
+            "label": "≦",
+            "latex": "\\leqq "
+          },
+          "l": {
+            "label": "≧",
+            "latex": "\\geqq "
+          }
+        },
+        {
+          "id": "basic-09",
+          "c": {
+            "label": "1",
+            "latex": "1"
+          },
+          "u": {
+            "label": "x²",
+            "latex": "^{2}"
+          },
+          "r": {
+            "label": "xⁿ",
+            "latex": "^{#0}"
+          },
+          "d": {
+            "label": "xₙ",
+            "latex": "_{#0}"
+          },
+          "l": {
+            "label": "√",
+            "latex": "\\sqrt{#0}"
+          }
+        },
+        {
+          "id": "basic-10",
+          "c": {
+            "label": "2",
+            "latex": "2"
+          },
+          "u": {
+            "label": "分数",
+            "latex": "\\frac{#0}{#?}"
+          },
+          "r": {
+            "label": "ⁿ√",
+            "latex": "\\sqrt[#0]{#?}"
+          },
+          "d": {
+            "label": "|x|",
+            "latex": "\\left|#0\\right|"
+          },
+          "l": {
+            "label": "( )",
+            "latex": "\\left(#0\\right)"
+          }
+        },
+        {
+          "id": "basic-11",
+          "c": {
+            "label": "3",
+            "latex": "3"
+          },
+          "u": {
+            "label": "∞",
+            "latex": "\\infty "
+          },
+          "r": {
+            "label": "→",
+            "latex": "\\to "
+          },
+          "d": {
+            "label": "⇒",
+            "latex": "\\Rightarrow "
+          },
+          "l": {
+            "label": "⇔",
+            "latex": "\\Leftrightarrow "
+          }
+        },
+        {
+          "id": "basic-12",
+          "c": {
+            "label": ",",
+            "latex": ","
+          },
+          "u": {
+            "label": "≠",
+            "latex": "\\neq "
+          },
+          "r": {
+            "label": "≈",
+            "latex": "\\approx "
+          },
+          "d": {
+            "label": "∴",
+            "latex": "\\therefore "
+          },
+          "l": {
+            "label": "…",
+            "latex": "\\cdots "
+          }
+        },
+        {
+          "id": "basic-13",
+          "c": {
+            "label": "0",
+            "latex": "0"
+          },
+          "u": {
+            "label": ".",
+            "latex": "."
+          },
+          "r": {
+            "label": "!",
+            "latex": "!"
+          },
+          "d": {
+            "label": "°",
+            "latex": "^{\\circ}"
+          },
+          "l": {
+            "label": "'",
+            "latex": "'"
+          }
+        },
+        {
+          "id": "basic-14",
+          "c": {
+            "label": "A",
+            "latex": "A"
+          },
+          "u": {
+            "label": "B",
+            "latex": "B"
+          },
+          "r": {
+            "label": "C",
+            "latex": "C"
+          },
+          "d": {
+            "label": "P",
+            "latex": "P"
+          },
+          "l": {
+            "label": "Q",
+            "latex": "Q"
+          }
+        },
+        {
+          "id": "basic-15",
+          "c": {
+            "label": "γ",
+            "latex": "\\gamma "
+          },
+          "u": {
+            "label": "δ",
+            "latex": "\\delta "
+          },
+          "r": {
+            "label": "λ",
+            "latex": "\\lambda "
+          },
+          "d": {
+            "label": "ω",
+            "latex": "\\omega "
+          },
+          "l": {
+            "label": "φ",
+            "latex": "\\varphi "
+          }
+        },
+        {
+          "id": "basic-16",
+          "c": {
+            "label": "空白",
+            "latex": "\\ "
+          },
+          "u": {
+            "label": "改行",
+            "latex": "\\\\ "
+          },
+          "r": {
+            "label": "{ }",
+            "latex": "{#0}"
+          },
+          "d": {
+            "label": "文字",
+            "latex": "\\text{#0}"
+          },
+          "l": {
+            "label": "・",
+            "latex": "\\cdot "
+          }
+        }
+      ]
+    },
+    {
+      "id": "exam",
+      "name": "入試",
+      "level": "exam",
+      "columns": 4,
+      "keys": [
+        {
+          "id": "exam-01",
+          "c": {
+            "label": "sin",
+            "latex": "\\sin "
+          },
+          "u": {
+            "label": "cos",
+            "latex": "\\cos "
+          },
+          "r": {
+            "label": "tan",
+            "latex": "\\tan "
+          },
+          "d": {
+            "label": "sin²",
+            "latex": "\\sin^{2} "
+          },
+          "l": {
+            "label": "cos²",
+            "latex": "\\cos^{2} "
+          }
+        },
+        {
+          "id": "exam-02",
+          "c": {
+            "label": "log",
+            "latex": "\\log "
+          },
+          "u": {
+            "label": "logₐ",
+            "latex": "\\log_{#0} "
+          },
+          "r": {
+            "label": "eˣ",
+            "latex": "e^{#0}"
+          },
+          "d": {
+            "label": "log₁₀",
+            "latex": "\\log_{10} "
+          },
+          "l": {
+            "label": "log₂",
+            "latex": "\\log_{2} "
+          }
+        },
+        {
+          "id": "exam-03",
+          "c": {
+            "label": "lim",
+            "latex": "\\lim_{#0} "
+          },
+          "u": {
+            "label": "n→∞",
+            "latex": "\\lim_{n\\to\\infty} "
+          },
+          "r": {
+            "label": "x→a",
+            "latex": "\\lim_{x\\to #0} "
+          },
+          "d": {
+            "label": "x→0",
+            "latex": "\\lim_{x\\to 0} "
+          },
+          "l": {
+            "label": "x→∞",
+            "latex": "\\lim_{x\\to\\infty} "
+          }
+        },
+        {
+          "id": "exam-04",
+          "c": {
+            "label": "∫",
+            "latex": "\\int "
+          },
+          "u": {
+            "label": "∫ₐᵇ",
+            "latex": "\\int_{#0}^{#?} "
+          },
+          "r": {
+            "label": "dx",
+            "latex": "\\,dx"
+          },
+          "d": {
+            "label": "[ ]ₐᵇ",
+            "latex": "\\left[#0\\right]_{#?}^{#?}"
+          },
+          "l": {
+            "label": "dt",
+            "latex": "\\,dt"
+          }
+        },
+        {
+          "id": "exam-05",
+          "c": {
+            "label": "Σ",
+            "latex": "\\sum_{k=1}^{n} "
+          },
+          "u": {
+            "label": "Σ空欄",
+            "latex": "\\sum_{#0}^{#?} "
+          },
+          "r": {
+            "label": "aₙ",
+            "latex": "a_{n}"
+          },
+          "d": {
+            "label": "aₙ₊₁",
+            "latex": "a_{n+1}"
+          },
+          "l": {
+            "label": "Sₙ",
+            "latex": "S_{n}"
+          }
+        },
+        {
+          "id": "exam-06",
+          "c": {
+            "label": "f(x)",
+            "latex": "f(x)"
+          },
+          "u": {
+            "label": "f'(x)",
+            "latex": "f'(x)"
+          },
+          "r": {
+            "label": "f''(x)",
+            "latex": "f''(x)"
+          },
+          "d": {
+            "label": "dy/dx",
+            "latex": "\\frac{dy}{dx}"
+          },
+          "l": {
+            "label": "d/dx",
+            "latex": "\\frac{d}{dx}"
+          }
+        },
+        {
+          "id": "exam-07",
+          "c": {
+            "label": "a⃗",
+            "latex": "\\vec{#0}"
+          },
+          "u": {
+            "label": "AB⃗",
+            "latex": "\\overrightarrow{#0}"
+          },
+          "r": {
+            "label": "|a⃗|",
+            "latex": "\\left|\\vec{#0}\\right|"
+          },
+          "d": {
+            "label": "内積・",
+            "latex": "\\cdot "
+          },
+          "l": {
+            "label": "⊥",
+            "latex": "\\perp "
+          }
+        },
+        {
+          "id": "exam-08",
+          "c": {
+            "label": "△",
+            "latex": "\\triangle "
+          },
+          "u": {
+            "label": "∠",
+            "latex": "\\angle "
+          },
+          "r": {
+            "label": "∥",
+            "latex": "\\parallel "
+          },
+          "d": {
+            "label": "≡",
+            "latex": "\\equiv "
+          },
+          "l": {
+            "label": "∽",
+            "latex": "\\backsim "
+          }
+        },
+        {
+          "id": "exam-09",
+          "c": {
+            "label": "∈",
+            "latex": "\\in "
+          },
+          "u": {
+            "label": "⊂",
+            "latex": "\\subset "
+          },
+          "r": {
+            "label": "∪",
+            "latex": "\\cup "
+          },
+          "d": {
+            "label": "∩",
+            "latex": "\\cap "
+          },
+          "l": {
+            "label": "∅",
+            "latex": "\\emptyset "
+          }
+        },
+        {
+          "id": "exam-10",
+          "c": {
+            "label": "A̅",
+            "latex": "\\overline{#0}"
+          },
+          "u": {
+            "label": "∉",
+            "latex": "\\notin "
+          },
+          "r": {
+            "label": "⊃",
+            "latex": "\\supset "
+          },
+          "d": {
+            "label": "n(A)",
+            "latex": "n(A)"
+          },
+          "l": {
+            "label": "∋",
+            "latex": "\\ni "
+          }
+        },
+        {
+          "id": "exam-11",
+          "c": {
+            "label": "ₙCᵣ",
+            "latex": "{}_{#0}\\mathrm{C}_{#?}"
+          },
+          "u": {
+            "label": "ₙPᵣ",
+            "latex": "{}_{#0}\\mathrm{P}_{#?}"
+          },
+          "r": {
+            "label": "n!",
+            "latex": "n!"
+          },
+          "d": {
+            "label": "P(A)",
+            "latex": "P(A)"
+          },
+          "l": {
+            "label": "E(X)",
+            "latex": "E(X)"
+          }
+        },
+        {
+          "id": "exam-12",
+          "c": {
+            "label": "i",
+            "latex": "i"
+          },
+          "u": {
+            "label": "z̄",
+            "latex": "\\overline{z}"
+          },
+          "r": {
+            "label": "|z|",
+            "latex": "\\left|z\\right|"
+          },
+          "d": {
+            "label": "arg",
+            "latex": "\\arg "
+          },
+          "l": {
+            "label": "V(X)",
+            "latex": "V(X)"
+          }
+        },
+        {
+          "id": "exam-13",
+          "c": {
+            "label": "場合分け",
+            "latex": "\\begin{cases} #0 & #? \\\\ #? & #? \\end{cases}"
+          },
+          "u": {
+            "label": "連立",
+            "latex": "\\left\\{\\begin{array}{l} #0 \\\\ #? \\end{array}\\right."
+          },
+          "r": {
+            "label": "&",
+            "latex": "& "
+          },
+          "d": {
+            "label": "改行",
+            "latex": "\\\\ "
+          },
+          "l": {
+            "label": "かつ",
+            "latex": "\\text{ かつ }"
+          }
+        },
+        {
+          "id": "exam-14",
+          "c": {
+            "label": "( )",
+            "latex": "\\left(#0\\right)"
+          },
+          "u": {
+            "label": "{ }",
+            "latex": "\\left\\{#0\\right\\}"
+          },
+          "r": {
+            "label": "[ ]",
+            "latex": "\\left[#0\\right]"
+          },
+          "d": {
+            "label": "| |",
+            "latex": "\\left|#0\\right|"
+          },
+          "l": {
+            "label": "√ ",
+            "latex": "\\sqrt{#0}"
+          }
+        },
+        {
+          "id": "exam-15",
+          "c": {
+            "label": "π/2",
+            "latex": "\\frac{\\pi}{2}"
+          },
+          "u": {
+            "label": "π/3",
+            "latex": "\\frac{\\pi}{3}"
+          },
+          "r": {
+            "label": "π/4",
+            "latex": "\\frac{\\pi}{4}"
+          },
+          "d": {
+            "label": "π/6",
+            "latex": "\\frac{\\pi}{6}"
+          },
+          "l": {
+            "label": "2π",
+            "latex": "2\\pi "
+          }
+        },
+        {
+          "id": "exam-16",
+          "c": {
+            "label": "√2",
+            "latex": "\\sqrt{2}"
+          },
+          "u": {
+            "label": "√3",
+            "latex": "\\sqrt{3}"
+          },
+          "r": {
+            "label": "e",
+            "latex": "e"
+          },
+          "d": {
+            "label": "%",
+            "latex": "\\%"
+          },
+          "l": {
+            "label": "単位",
+            "latex": "\\,\\mathrm{#0}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uni",
+      "name": "大学",
+      "level": "university",
+      "columns": 4,
+      "keys": [
+        {
+          "id": "uni-01",
+          "c": {
+            "label": "∂",
+            "latex": "\\partial "
+          },
+          "u": {
+            "label": "∂/∂x",
+            "latex": "\\frac{\\partial #0}{\\partial x}"
+          },
+          "r": {
+            "label": "∂²/∂x²",
+            "latex": "\\frac{\\partial^{2} #0}{\\partial x^{2}}"
+          },
+          "d": {
+            "label": "∇",
+            "latex": "\\nabla "
+          },
+          "l": {
+            "label": "Δ",
+            "latex": "\\Delta "
+          }
+        },
+        {
+          "id": "uni-02",
+          "c": {
+            "label": "∬",
+            "latex": "\\iint "
+          },
+          "u": {
+            "label": "∭",
+            "latex": "\\iiint "
+          },
+          "r": {
+            "label": "∮",
+            "latex": "\\oint "
+          },
+          "d": {
+            "label": "∫±∞",
+            "latex": "\\int_{-\\infty}^{\\infty} "
+          },
+          "l": {
+            "label": "dxdy",
+            "latex": "\\,dx\\,dy"
+          }
+        },
+        {
+          "id": "uni-03",
+          "c": {
+            "label": "行列2",
+            "latex": "\\begin{pmatrix} #0 & #? \\\\ #? & #? \\end{pmatrix}"
+          },
+          "u": {
+            "label": "行列3",
+            "latex": "\\begin{pmatrix} #0 & #? & #? \\\\ #? & #? & #? \\\\ #? & #? & #? \\end{pmatrix}"
+          },
+          "r": {
+            "label": "|行列|",
+            "latex": "\\begin{vmatrix} #0 & #? \\\\ #? & #? \\end{vmatrix}"
+          },
+          "d": {
+            "label": "縦ベクトル",
+            "latex": "\\begin{pmatrix} #0 \\\\ #? \\end{pmatrix}"
+          },
+          "l": {
+            "label": "[行列]",
+            "latex": "\\begin{bmatrix} #0 & #? \\\\ #? & #? \\end{bmatrix}"
+          }
+        },
+        {
+          "id": "uni-04",
+          "c": {
+            "label": "Aᵀ",
+            "latex": "^{\\top}"
+          },
+          "u": {
+            "label": "A⁻¹",
+            "latex": "^{-1}"
+          },
+          "r": {
+            "label": "det",
+            "latex": "\\det "
+          },
+          "d": {
+            "label": "tr",
+            "latex": "\\operatorname{tr} "
+          },
+          "l": {
+            "label": "rank",
+            "latex": "\\operatorname{rank} "
+          }
+        },
+        {
+          "id": "uni-05",
+          "c": {
+            "label": "ℝ",
+            "latex": "\\mathbb{R}"
+          },
+          "u": {
+            "label": "ℂ",
+            "latex": "\\mathbb{C}"
+          },
+          "r": {
+            "label": "ℕ",
+            "latex": "\\mathbb{N}"
+          },
+          "d": {
+            "label": "ℤ",
+            "latex": "\\mathbb{Z}"
+          },
+          "l": {
+            "label": "ℚ",
+            "latex": "\\mathbb{Q}"
+          }
+        },
+        {
+          "id": "uni-06",
+          "c": {
+            "label": "∀",
+            "latex": "\\forall "
+          },
+          "u": {
+            "label": "∃",
+            "latex": "\\exists "
+          },
+          "r": {
+            "label": "¬",
+            "latex": "\\lnot "
+          },
+          "d": {
+            "label": "∧",
+            "latex": "\\land "
+          },
+          "l": {
+            "label": "∨",
+            "latex": "\\lor "
+          }
+        },
+        {
+          "id": "uni-07",
+          "c": {
+            "label": "⊆",
+            "latex": "\\subseteq "
+          },
+          "u": {
+            "label": "⊇",
+            "latex": "\\supseteq "
+          },
+          "r": {
+            "label": "∖",
+            "latex": "\\setminus "
+          },
+          "d": {
+            "label": "×",
+            "latex": "\\times "
+          },
+          "l": {
+            "label": "∘",
+            "latex": "\\circ "
+          }
+        },
+        {
+          "id": "uni-08",
+          "c": {
+            "label": "↦",
+            "latex": "\\mapsto "
+          },
+          "u": {
+            "label": "⟶",
+            "latex": "\\longrightarrow "
+          },
+          "r": {
+            "label": "≅",
+            "latex": "\\cong "
+          },
+          "d": {
+            "label": "≃",
+            "latex": "\\simeq "
+          },
+          "l": {
+            "label": "∝",
+            "latex": "\\propto "
+          }
+        },
+        {
+          "id": "uni-09",
+          "c": {
+            "label": "ε",
+            "latex": "\\varepsilon "
+          },
+          "u": {
+            "label": "δ",
+            "latex": "\\delta "
+          },
+          "r": {
+            "label": "μ",
+            "latex": "\\mu "
+          },
+          "d": {
+            "label": "σ",
+            "latex": "\\sigma "
+          },
+          "l": {
+            "label": "ρ",
+            "latex": "\\rho "
+          }
+        },
+        {
+          "id": "uni-10",
+          "c": {
+            "label": "Ω",
+            "latex": "\\Omega "
+          },
+          "u": {
+            "label": "Γ",
+            "latex": "\\Gamma "
+          },
+          "r": {
+            "label": "Λ",
+            "latex": "\\Lambda "
+          },
+          "d": {
+            "label": "Σ",
+            "latex": "\\Sigma "
+          },
+          "l": {
+            "label": "Φ",
+            "latex": "\\Phi "
+          }
+        },
+        {
+          "id": "uni-11",
+          "c": {
+            "label": "sup",
+            "latex": "\\sup "
+          },
+          "u": {
+            "label": "inf",
+            "latex": "\\inf "
+          },
+          "r": {
+            "label": "max",
+            "latex": "\\max "
+          },
+          "d": {
+            "label": "min",
+            "latex": "\\min "
+          },
+          "l": {
+            "label": "limsup",
+            "latex": "\\limsup "
+          }
+        },
+        {
+          "id": "uni-12",
+          "c": {
+            "label": "exp",
+            "latex": "\\exp "
+          },
+          "u": {
+            "label": "ln",
+            "latex": "\\ln "
+          },
+          "r": {
+            "label": "sinh",
+            "latex": "\\sinh "
+          },
+          "d": {
+            "label": "cosh",
+            "latex": "\\cosh "
+          },
+          "l": {
+            "label": "arctan",
+            "latex": "\\arctan "
+          }
+        },
+        {
+          "id": "uni-13",
+          "c": {
+            "label": "⟨ ⟩",
+            "latex": "\\langle #0 \\rangle "
+          },
+          "u": {
+            "label": "‖ ‖",
+            "latex": "\\left\\| #0 \\right\\|"
+          },
+          "r": {
+            "label": "⌊ ⌋",
+            "latex": "\\lfloor #0 \\rfloor "
+          },
+          "d": {
+            "label": "⌈ ⌉",
+            "latex": "\\lceil #0 \\rceil "
+          },
+          "l": {
+            "label": "{ | }",
+            "latex": "\\left\\{ #0 \\,\\middle|\\, #? \\right\\}"
+          }
+        },
+        {
+          "id": "uni-14",
+          "c": {
+            "label": "x̂",
+            "latex": "\\hat{#0}"
+          },
+          "u": {
+            "label": "ẋ",
+            "latex": "\\dot{#0}"
+          },
+          "r": {
+            "label": "ẍ",
+            "latex": "\\ddot{#0}"
+          },
+          "d": {
+            "label": "x̃",
+            "latex": "\\tilde{#0}"
+          },
+          "l": {
+            "label": "太字x",
+            "latex": "\\boldsymbol{#0}"
+          }
+        },
+        {
+          "id": "uni-15",
+          "c": {
+            "label": "Σᵢ",
+            "latex": "\\sum_{i=1}^{n} "
+          },
+          "u": {
+            "label": "Σ∞",
+            "latex": "\\sum_{n=1}^{\\infty} "
+          },
+          "r": {
+            "label": "∏",
+            "latex": "\\prod_{#0}^{#?} "
+          },
+          "d": {
+            "label": "⊕",
+            "latex": "\\oplus "
+          },
+          "l": {
+            "label": "⊗",
+            "latex": "\\otimes "
+          }
+        },
+        {
+          "id": "uni-16",
+          "c": {
+            "label": "≈",
+            "latex": "\\approx "
+          },
+          "u": {
+            "label": "≡",
+            "latex": "\\equiv "
+          },
+          "r": {
+            "label": "∼",
+            "latex": "\\sim "
+          },
+          "d": {
+            "label": "≪",
+            "latex": "\\ll "
+          },
+          "l": {
+            "label": "≫",
+            "latex": "\\gg "
+          }
+        }
+      ]
+    },
+    {
+      "id": "my",
+      "name": "マイキー",
+      "level": "custom",
+      "columns": 4,
+      "keys": [
+        {
+          "id": "my-01",
+          "c": {
+            "label": "(1)",
+            "latex": "(1)\\ "
+          },
+          "u": {
+            "label": "(2)",
+            "latex": "(2)\\ "
+          },
+          "r": {
+            "label": "(3)",
+            "latex": "(3)\\ "
+          },
+          "d": {
+            "label": "(4)",
+            "latex": "(4)\\ "
+          },
+          "l": {
+            "label": "(5)",
+            "latex": "(5)\\ "
+          }
+        },
+        {
+          "id": "my-02",
+          "c": {
+            "label": "y=",
+            "latex": "y="
+          },
+          "u": {
+            "label": "f(x)=",
+            "latex": "f(x)="
+          },
+          "r": {
+            "label": "x=",
+            "latex": "x="
+          },
+          "d": {
+            "label": "aₙ=",
+            "latex": "a_{n}="
+          },
+          "l": {
+            "label": "S=",
+            "latex": "S="
+          }
+        },
+        {
+          "id": "my-03",
+          "c": {
+            "label": "△ABC",
+            "latex": "\\triangle ABC"
+          },
+          "u": {
+            "label": "∠A",
+            "latex": "\\angle A"
+          },
+          "r": {
+            "label": "AB",
+            "latex": "AB"
+          },
+          "d": {
+            "label": "BC",
+            "latex": "BC"
+          },
+          "l": {
+            "label": "CA",
+            "latex": "CA"
+          }
+        },
+        {
+          "id": "my-04",
+          "c": {
+            "label": "よって",
+            "latex": "\\text{よって }"
+          },
+          "u": {
+            "label": "ゆえに",
+            "latex": "\\text{ゆえに }"
+          },
+          "r": {
+            "label": "したがって",
+            "latex": "\\text{したがって }"
+          },
+          "d": {
+            "label": "ただし",
+            "latex": "\\text{ただし }"
+          },
+          "l": {
+            "label": "(答)",
+            "latex": "\\quad(\\text{答})"
+          }
+        },
+        {
+          "id": "my-05"
+        },
+        {
+          "id": "my-06"
+        },
+        {
+          "id": "my-07"
+        },
+        {
+          "id": "my-08"
+        }
+      ]
+    }
+  ]
+}

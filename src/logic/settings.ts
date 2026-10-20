@@ -1,5 +1,6 @@
 export type InputMode = 'flick' | 'tap' | 'hold';
 export type OneHand = 'none' | 'left' | 'right';
+export type CopyFormat = 'word' | 'latex' | 'mathml';
 export type Theme = 'auto' | 'light' | 'dark' | 'contrast';
 
 /** 学生ごとの設定。既定値と範囲は SPEC §4.2・§5。 */
@@ -20,6 +21,7 @@ export interface Settings {
   click: boolean;
   speak: boolean;
   theme: Theme;
+  copyFormat: CopyFormat; // 最後に選んだコピー形式
 }
 
 export const defaultSettings: Settings = {
@@ -39,6 +41,7 @@ export const defaultSettings: Settings = {
   click: false,
   speak: false,
   theme: 'auto',
+  copyFormat: 'word',
 };
 
 type Rule =
@@ -63,6 +66,7 @@ export const SETTING_RULES: Record<keyof Settings, Rule> = {
   click: { type: 'boolean' },
   speak: { type: 'boolean' },
   theme: { type: 'enum', values: ['auto', 'light', 'dark', 'contrast'] },
+  copyFormat: { type: 'enum', values: ['word', 'latex', 'mathml'] },
 };
 
 /**

@@ -7,6 +7,8 @@ function fake(placeholderResult: boolean) {
     insert: () => {},
     command: (n) => (calls.push(n), n === 'moveToNextPlaceholder' ? placeholderResult : true),
     getLatex: () => '',
+    getLatexClean: () => '',
+    getMathMl: () => '',
     clear: () => {},
   };
   return { port, calls };

@@ -6,6 +6,8 @@ import { runAction, type ActionId } from './logic/editor';
 import { activeProfile } from './logic/profile';
 import { loadState, saveState } from './logic/storage';
 import { isDefaultKey, moveKey, moveKeyTo, resetKey, resolveTabs, setKey, visibleTabs, emptyCustomization } from './logic/customize';
+import { mountCopy } from './ui/copy';
+import { mountHelp } from './ui/help';
 import { openKeyEditor } from './ui/keyEditor';
 import { mountSettings } from './ui/settingsDialog';
 import { applyAppSettings, feedback } from './ui/appSettings';
@@ -34,7 +36,10 @@ app.innerHTML = `
 <div class="wrap">
   <header class="top">
     <h1>フリック数式パッド</h1>
-    <button class="act" type="button" id="open-settings">設定</button>
+    <div class="btns">
+      <button class="act" type="button" id="open-help">Wordで使う方法</button>
+      <button class="act" type="button" id="open-settings">設定</button>
+    </div>
   </header>
   <div class="main">
     <section class="out" aria-label="入力した数式">
@@ -45,12 +50,22 @@ app.innerHTML = `
       <div class="actions" role="group" aria-label="編集操作">
         ${BUTTONS.map((b) => `<button class="act" type="button" data-action="${b.id}">${b.text}</button>`).join('')}
       </div>
+      <div class="copy-row">
+        <label for="fmt">コピーの形式</label>
+        <select id="fmt"></select>
+        <button class="act primary" type="button" id="copy">コピー</button>
+      </div>
+      <div id="copy-fallback" hidden>
+        <textarea readonly rows="3" aria-label="コピー用のテキスト（選択済み）"></textarea>
+        <p class="note">選択しました。Ctrl＋C（Macは⌘＋C）でコピーしてください。</p>
+      </div>
       <p class="sr" id="live" aria-live="polite"></p>
     </section>
     <section class="pad" id="pad" aria-label="キーパッド"></section>
   </div>
 </div>
 <dialog class="settings" id="settings"></dialog>
+<dialog class="settings" id="help"></dialog>
 <dialog class="settings" id="key-editor"></dialog>
 <dialog class="settings" id="key-picker"></dialog>`;
 
@@ -163,6 +178,23 @@ const dlg = mountSettings(document.getElementById('settings') as HTMLDialogEleme
   announce: (t) => (live.textContent = t),
 });
 document.getElementById('open-settings')!.addEventListener('click', () => dlg.open());
+const help = mountHelp(document.getElementById('help') as HTMLDialogElement);
+document.getElementById('open-help')!.addEventListener('click', () => help.open());
+mountCopy(
+  {
+    button: document.getElementById('copy') as HTMLButtonElement,
+    select: document.getElementById('fmt') as HTMLSelectElement,
+    fallback: document.getElementById('copy-fallback')!,
+    announce: (t) => (live.textContent = t),
+  },
+  port,
+  defaultKeySet,
+  () => settings.copyFormat,
+  (f) => {
+    settings.copyFormat = f;
+    persist();
+  },
+);
 apply();
 
 // テスト用に公開（E2E）

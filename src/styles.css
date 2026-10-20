@@ -115,3 +115,17 @@ fieldset.edit-row input.code{font-family:ui-monospace,Consolas,monospace}
 .tab-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .tab-row input[type=text]{flex:1 1 140px;min-height:44px;font:inherit;padding:6px 10px;color:inherit;background:var(--paper);border:1.5px solid var(--line);border-radius:8px}
 .tab-row input[type=checkbox]{width:28px;height:28px;margin:8px;accent-color:var(--accent)}
+
+/* コピー・説明 */
+.copy-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--gap);align-items:center}
+.copy-row select{min-height:44px;font:inherit;padding:6px 10px;color:inherit;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;min-width:0}
+#copy-fallback textarea{width:100%;font:inherit;font-family:ui-monospace,Consolas,monospace;color:inherit;background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:8px}
+.howto ol{margin:0;padding-left:1.3em}
+.howto li{margin-bottom:6px}
+code{font-family:ui-monospace,Consolas,monospace;background:var(--paper);padding:1px 6px;border-radius:4px}
+
+/* Word互換テストページ */
+table.wt{border-collapse:collapse;width:100%;font-size:.9rem}
+table.wt th,table.wt td{border:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}
+table.wt td:nth-child(5){max-width:260px;overflow-wrap:anywhere}
+table.wt select,table.wt input[type=text]{min-height:44px;font:inherit;color:inherit;background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:4px 8px;width:100%}

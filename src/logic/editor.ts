@@ -3,6 +3,9 @@ export interface EditorPort {
   insert(latex: string): void;
   command(name: EditorCommand): boolean;
   getLatex(): string;
+  /** 空欄（\placeholder）を取り除いたLaTeX。コピー用 */
+  getLatexClean(): string;
+  getMathMl(): string;
   clear(): void;
 }
 

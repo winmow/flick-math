@@ -10,6 +10,8 @@ export function mathfieldPort(mf: MathfieldElement): EditorPort {
     },
     command: (name: EditorCommand) => mf.executeCommand(name),
     getLatex: () => mf.getValue('latex'),
+    getLatexClean: () => mf.getValue('latex-without-placeholders'),
+    getMathMl: () => mf.getValue('math-ml'),
     clear: () => {
       // 取り消しで戻せるよう、値の代入ではなく編集操作で消す
       mf.executeCommand('selectAll');

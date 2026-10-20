@@ -156,7 +156,7 @@ test('入力・タブ切替・移動の結果がaria-liveで通知される', as
   await page.locator('[data-key-id="basic-01"]').click({ position: { x: 5, y: 5 } }).catch(() => {});
   await page.getByRole('button', { name: '入試' }).click();
   await expect(live).toHaveText('入試のキーに切り替えました');
-  await page.getByRole('button', { name: /← 左へ/ }).click();
+  await page.locator('.actions').getByRole('button', { name: /← 左へ/ }).click();
   await expect(live).toHaveText('左へ移動');
 });
 
@@ -209,7 +209,12 @@ test('スマホ幅では「消す」などがキーパッドの中(画面下の�
   }
 });
 
-test('広い画面ではキーパッド内の操作行は出ない', async ({ page }) => {
+test('広い画面でも、キーパッドの上に操作行(←→・次の空欄・消す・戻す)が出る', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#pad .quick')).toBeHidden();
+  const quick = page.locator('#pad .quick');
+  await expect(quick).toBeVisible();
+  await expect(quick.getByRole('button')).toHaveText(['←', '→', '次の空欄', '⌫ 消す', '↶ 戻す']);
+  const q = (await quick.boundingBox())!;
+  const k = (await page.locator('#pad .grid').boundingBox())!;
+  expect(q.y + q.height).toBeLessThanOrEqual(k.y); // キー一覧の上にある
 });

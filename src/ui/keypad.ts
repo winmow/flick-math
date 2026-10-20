@@ -7,6 +7,7 @@ import type { Dir, Key, KeyItem, Tab } from '../logic/types';
 export interface KeypadHandlers {
   onInsert(item: KeyItem): void;
   announce(text: string): void;
+  onBackspace(): void;
   onEditKey(tabId: string, key: Key): void;
   onReorder(tabId: string, keyId: string, targetKeyId: string): void;
 }
@@ -117,6 +118,30 @@ export function mountKeypad(root: HTMLElement, getTabs: () => Tab[], settings: S
       attach(b, key, tab.id);
       grid.append(b);
     }
+    grid.append(backspaceKey());
+  }
+
+  /** 並びの最後に置く固定の「⌫ 消す」キー。数字キーのそばで消せる。キーセットの編集・並べ替えの対象ではない */
+  function backspaceKey() {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'key special';
+    b.dataset.special = 'backspace';
+    const c = document.createElement('span');
+    c.className = 'c';
+    c.textContent = '⌫';
+    const d = document.createElement('span');
+    d.className = 'd dn';
+    d.textContent = '消す';
+    b.append(c, d);
+    b.addEventListener('pointerdown', (ev) => ev.preventDefault()); // エディタのフォーカス・選択を保つ
+    b.addEventListener('click', () => {
+      if (editing) return h.announce('編集モード中は消せません。編集モードを終わってください');
+      if (isWithinGuard(performance.now(), lastInputAt, settings.guardMs)) return; // 二度押し防止
+      lastInputAt = performance.now();
+      h.onBackspace();
+    });
+    return b;
   }
 
   function showBubble(a: Active) {

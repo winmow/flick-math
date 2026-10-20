@@ -13,7 +13,7 @@ test.beforeEach(async ({ context, page }) => {
     w.__port.insert('\\frac{#?}{#?}');
   });
   await page.keyboard.type('1');
-  await page.getByRole('button', { name: /次の空欄/ }).click();
+  await page.locator('.actions').getByRole('button', { name: /次の空欄/ }).click();
   await page.keyboard.type('2');
 });
 

@@ -147,6 +147,11 @@ function customChanged() {
 }
 
 const keypad = mountKeypad(document.getElementById('pad-keys')!, () => visibleTabs(defaultKeySet, custom()), settings, {
+  onBackspace: () => {
+    live.textContent = runAction(port, 'backspace');
+    mf.focus();
+    feedback(settings);
+  },
   onEditKey: editKey,
   onReorder: (tabId, keyId, targetId) => {
     if (moveKeyTo(defaultKeySet, custom(), tabId, keyId, targetId)) {

@@ -64,7 +64,7 @@ test('吹き出しが出て、離すと消える', async ({ page }) => {
 test('分数→1→次の空欄→2 をキー操作で入力できる', async ({ page }) => {
   await flick(page, 'basic-10', 0, -50); // 分数
   await flick(page, 'basic-09', 0, 0); // 1
-  await page.getByRole('button', { name: /次の空欄/ }).click();
+  await page.locator('.actions').getByRole('button', { name: /次の空欄/ }).click();
   await flick(page, 'basic-10', 0, 0); // 2
   expect(await latex(page)).toMatch(/^\\frac(\{1\}\{2\}|12)$/);
 });
@@ -97,4 +97,40 @@ test('キーは44px以上、axe違反なし', async ({ page }) => {
   expect(box.width).toBeGreaterThanOrEqual(44);
   expect(box.height).toBeGreaterThanOrEqual(44);
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});
+
+test('⌫ キーが並びの最後にあり、タップで1つ消せる', async ({ page }) => {
+  await flick(page, 'basic-01', 0, 0); // 7
+  await flick(page, 'basic-02', 0, 0); // 8
+  const bs = page.locator('.key.special');
+  await expect(bs).toHaveCount(1);
+  await expect(bs).toHaveAccessibleName('⌫ 消す');
+  const last = await page.locator('.grid > *').last().getAttribute('data-special');
+  expect(last).toBe('backspace');
+  await bs.click();
+  expect(await latex(page)).toBe('7');
+  const box = (await bs.boundingBox())!;
+  expect(box.width).toBeGreaterThanOrEqual(44);
+  expect(box.height).toBeGreaterThanOrEqual(44);
+});
+
+test('⌫ キーは連続タッチ無視の設定に従う', async ({ page }) => {
+  await setSettings(page, { guardMs: 600 });
+  await flick(page, 'basic-01', 0, 0);
+  await page.waitForTimeout(650);
+  await flick(page, 'basic-02', 0, 0); // 78
+  await page.waitForTimeout(650);
+  await page.locator('.key.special').click();
+  await page.locator('.key.special').click(); // 二度押し：無視される
+  expect(await latex(page)).toBe('7');
+});
+
+test('どのタブにも⌫キーがあり、編集モードでは消さない', async ({ page }) => {
+  await page.getByRole('button', { name: '入試' }).click();
+  await expect(page.locator('.key.special')).toHaveCount(1);
+  await flick(page, 'exam-01', 0, 0);
+  const before = await latex(page);
+  await page.getByRole('button', { name: 'キーを編集' }).click();
+  await page.locator('.key.special').click();
+  expect(await latex(page)).toBe(before);
 });

@@ -85,7 +85,7 @@ test('すべて消すは2回押しで実行され、取り消しで戻せる', a
   await dialog(page).getByRole('button', { name: 'もう一度押すと消えます' }).click();
   expect(await latex(page)).toBe('');
   await dialog(page).getByRole('button', { name: '閉じる' }).click();
-  await page.getByRole('button', { name: /取り消し/ }).click();
+  await page.locator('.actions').getByRole('button', { name: /取り消し/ }).click();
   expect(await latex(page)).toBe('x+1');
 });
 

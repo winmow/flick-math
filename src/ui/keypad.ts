@@ -43,8 +43,8 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
   document.body.append(bubble);
 
   const applySettings = () => {
-    root.style.setProperty('--key-h', `${settings.keyHeight}px`);
     root.classList.toggle('nolabels', !settings.showCorners);
+    grid.style.setProperty('--cols', String(settings.columns)); // 列数を変えるとキーが折り返す
   };
 
   function drawTabs() {
@@ -67,7 +67,6 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
 
   function drawGrid() {
     const tab = keyset.tabs.find((t) => t.id === tabId)!;
-    grid.style.setProperty('--cols', String(tab.columns));
     grid.replaceChildren();
     for (const key of tab.keys) {
       const b = document.createElement('button');
@@ -238,8 +237,8 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
     a.el.querySelectorAll('.hit').forEach((n) => n.classList.remove('hit'));
   }
 
-  applySettings();
   drawTabs();
   drawGrid();
+  applySettings();
   return { applySettings };
 }

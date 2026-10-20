@@ -11,7 +11,9 @@ export function mathfieldPort(mf: MathfieldElement): EditorPort {
     command: (name: EditorCommand) => mf.executeCommand(name),
     getLatex: () => mf.getValue('latex'),
     clear: () => {
-      mf.value = '';
+      // 取り消しで戻せるよう、値の代入ではなく編集操作で消す
+      mf.executeCommand('selectAll');
+      mf.executeCommand('deleteBackward');
     },
   };
 }

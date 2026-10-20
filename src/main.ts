@@ -2,7 +2,10 @@ import { MathfieldElement } from 'mathlive';
 import './styles.css';
 import { defaultKeySet } from './logic/defaultKeyset';
 import { runAction, type ActionId } from './logic/editor';
-import { defaultSettings } from './logic/settings';
+import { activeProfile } from './logic/profile';
+import { loadState, saveState } from './logic/storage';
+import { mountSettings } from './ui/settingsDialog';
+import { applyAppSettings, feedback } from './ui/appSettings';
 import { mountKeypad } from './ui/keypad';
 import { mathfieldPort } from './ui/mathfieldPort';
 
@@ -24,7 +27,10 @@ const BUTTONS: { id: ActionId; text: string }[] = [
 const app = document.getElementById('app')!;
 app.innerHTML = `
 <div class="wrap">
-  <h1>フリック数式パッド</h1>
+  <header class="top">
+    <h1>フリック数式パッド</h1>
+    <button class="act" type="button" id="open-settings">設定</button>
+  </header>
   <div class="main">
     <section class="out" aria-label="入力した数式">
       <div class="panel">
@@ -38,7 +44,8 @@ app.innerHTML = `
     </section>
     <section class="pad" id="pad" aria-label="キーパッド"></section>
   </div>
-</div>`;
+</div>
+<dialog class="settings" id="settings"></dialog>`;
 
 const mf = document.getElementById('mf') as MathfieldElement;
 const live = document.getElementById('live')!;
@@ -56,15 +63,52 @@ app.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
   });
 });
 
-mountKeypad(document.getElementById('pad')!, defaultKeySet, defaultSettings, {
+// ---- 設定とプロファイル ----
+const state = loadState();
+// 現在のプロファイルの設定を、キーパッドと共有するライブなオブジェクトとして持つ
+const settings = { ...activeProfile(state).settings };
+
+function persist() {
+  activeProfile(state).settings = { ...settings };
+  saveState(state);
+}
+
+const keypad = mountKeypad(document.getElementById('pad')!, defaultKeySet, settings, {
   onInsert: (item) => {
     port.insert(item.latex);
+    feedback(settings);
     live.textContent = '';
-    setTimeout(() => (live.textContent = `入力：${item.speak ?? item.label}`), 30);
+    setTimeout(() => {
+      const spoken = settings.speak ? `。現在の式：${mf.getValue('spoken-text')}` : '';
+      live.textContent = `入力：${item.speak ?? item.label}${spoken}`;
+    }, 30);
   },
   announce: (t) => (live.textContent = t),
 });
 
+function apply() {
+  applyAppSettings(settings);
+  keypad.applySettings();
+}
+
+const dlg = mountSettings(document.getElementById('settings') as HTMLDialogElement, {
+  state,
+  settings,
+  onChange: () => {
+    persist();
+    apply();
+  },
+  onProfileSwitch: () => {
+    saveState(state);
+    apply();
+  },
+  clearAll: () => port.clear(),
+  announce: (t) => (live.textContent = t),
+});
+document.getElementById('open-settings')!.addEventListener('click', () => dlg.open());
+apply();
+
 // テスト用に公開（E2E）
-(window as unknown as { __port: typeof port; __settings: typeof defaultSettings }).__port = port;
-(window as unknown as { __settings: typeof defaultSettings }).__settings = defaultSettings;
+const w = window as unknown as { __port: typeof port; __settings: typeof settings };
+w.__port = port;
+w.__settings = settings;

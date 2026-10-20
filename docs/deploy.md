@@ -3,7 +3,17 @@
 本番ビルド（`npm run build`）は `dist/` に静的ファイルを作ります。サーバー側の処理はありません。
 ビルドは相対パス（`base: './'`）なので、サブパス配信（GitHub Pages）にもルート配信（Cloudflare Pages）にもそのまま使えます。
 
-## GitHub Pages（現在の配信）
+## tools.studio-ray.org/flick-math/（正式な公開URL）
+別リポジトリ winmow/tools-portal（Cloudflare Pages、`main` へのpushで自動デプロイ）の `flick-math/` フォルダに、ビルド結果をコピーして公開します。
+
+```bash
+npm run publish:tools -- /Users/omae/dev/tools-portal
+cd /Users/omae/dev/tools-portal && git add -A && git commit -m "flick-math を更新" && git push
+```
+
+ヘッダー（CSP）は tools-portal 直下の `_headers`（`/flick-math/*`）に書いてあります。内容を変えるときは、このリポジトリの `public/_headers` と合わせてください。
+
+## GitHub Pages（バックアップの配信）
 `.github/workflows/deploy.yml` が、`main` へのpushで次を実行します。
 
 1. 型検査、ユニットテスト、E2E（axe含む）、PWA検査（オフライン起動・外部通信なし・CSP）

@@ -186,3 +186,30 @@ test('ダイアログ内でTab移動しても、フォーカス中の部品が�
     expect(fb, `Tab ${i + 1}`).toBeGreaterThanOrEqual(hb.y + hb.height - 1);
   }
 });
+
+test('スマホ幅では「消す」などがキーパッドの中(画面下の固定部分)にあり、押せる', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await page.goto('/');
+  await page.locator('.key').first().waitFor();
+  await page.evaluate(() => Object.assign((window as unknown as { __settings: object }).__settings, { guardMs: 0 }));
+  const quick = page.locator('#pad .quick');
+  await expect(quick).toBeVisible();
+  const q = (await quick.boundingBox())!;
+  expect(q.y + q.height).toBeLessThanOrEqual(700); // 最初の画面に収まっている
+  await page.locator('[data-key-id="basic-01"]').click();
+  await page.locator('[data-key-id="basic-04"]').click();
+  await quick.getByRole('button', { name: '⌫ 消す' }).click();
+  expect(await page.evaluate(() => (window as unknown as { __port: { getLatex(): string } }).__port.getLatex())).toBe('7');
+  await quick.getByRole('button', { name: '↶ 戻す' }).click();
+  expect(await page.evaluate(() => (window as unknown as { __port: { getLatex(): string } }).__port.getLatex())).toBe('7+');
+  for (const b of await quick.getByRole('button').all()) {
+    const r = (await b.boundingBox())!;
+    expect(r.width).toBeGreaterThanOrEqual(44);
+    expect(r.height).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test('広い画面ではキーパッド内の操作行は出ない', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#pad .quick')).toBeHidden();
+});

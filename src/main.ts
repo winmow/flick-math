@@ -32,6 +32,15 @@ const BUTTONS: { id: ActionId; text: string }[] = [
   { id: 'redo', text: 'やり直し ↷' },
 ];
 
+// 狭い画面ではキーパッドが画面下に固定されるので、よく使う操作はキーパッドの中にも置く
+const QUICK: { id: ActionId; text: string }[] = [
+  { id: 'left', text: '←' },
+  { id: 'right', text: '→' },
+  { id: 'nextBlank', text: '次の空欄' },
+  { id: 'backspace', text: '⌫ 消す' },
+  { id: 'undo', text: '↶ 戻す' },
+];
+
 const app = document.getElementById('app')!;
 app.innerHTML = `
 <div class="wrap">
@@ -62,7 +71,12 @@ app.innerHTML = `
       </div>
       <p class="sr" id="live" aria-live="polite"></p>
     </section>
-    <section class="pad" id="pad" aria-label="キーパッド"></section>
+    <section class="pad" id="pad" aria-label="キーパッド">
+      <div class="quick" role="group" aria-label="すぐ使う編集操作">
+        ${QUICK.map((b) => `<button class="act" type="button" data-action="${b.id}">${b.text}</button>`).join('')}
+      </div>
+      <div class="keys" id="pad-keys"></div>
+    </section>
   </div>
 </div>
 <dialog class="settings" id="settings"></dialog>
@@ -132,7 +146,7 @@ function customChanged() {
   keypad.refresh();
 }
 
-const keypad = mountKeypad(document.getElementById('pad')!, () => visibleTabs(defaultKeySet, custom()), settings, {
+const keypad = mountKeypad(document.getElementById('pad-keys')!, () => visibleTabs(defaultKeySet, custom()), settings, {
   onEditKey: editKey,
   onReorder: (tabId, keyId, targetId) => {
     if (moveKeyTo(defaultKeySet, custom(), tabId, keyId, targetId)) {

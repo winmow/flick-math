@@ -139,3 +139,11 @@ table.wt select,table.wt input[type=text]{min-height:44px;font:inherit;color:inh
 }
 /* ダイアログ内で、固定ヘッダーにフォーカス位置が隠れないようにする（WCAG 2.4.11） */
 dialog{scroll-padding-top:80px;scroll-padding-bottom:16px}
+
+/* 狭い画面：キーパッドの上に、よく使う操作（移動・空欄・消す・戻す）を置く */
+.quick{display:none}
+.keys{display:grid;gap:12px;min-width:0}
+@media (max-width:899px){
+  .quick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--gap)}
+  .quick .act{min-height:max(48px,calc(var(--key-h)*.6));padding:2px;font-size:.95rem;line-height:1.2}
+}

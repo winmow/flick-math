@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
 test('マニフェストとアイコンが正しい', async ({ page, request }) => {
@@ -50,4 +51,30 @@ test('外部への通信が一切ない', async ({ page }) => {
   await page.getByRole('button', { name: '設定' }).click();
   await page.waitForTimeout(500);
   expect(external).toEqual([]);
+});
+
+test('本番用のCSP(public/_headers)を付けても、画面・入力・設定・キー編集が動く', async ({ page }) => {
+  const headers = readFileSync('public/_headers', 'utf8');
+  const csp = headers.match(/Content-Security-Policy: (.+)/)![1];
+  await page.route('**/*', async (route) => {
+    const res = await route.fetch();
+    await route.fulfill({ response: res, headers: { ...res.headers(), 'content-security-policy': csp } });
+  });
+  const violations: string[] = [];
+  page.on('console', (m) => {
+    if (/Content Security Policy|violat/i.test(m.text())) violations.push(m.text());
+  });
+  page.on('pageerror', (e) => violations.push(e.message));
+  await page.goto('/');
+  await page.locator('.key').first().waitFor();
+  await page.evaluate(() => Object.assign((window as unknown as { __settings: object }).__settings, { guardMs: 0 }));
+  await page.locator('[data-key-id="basic-01"]').click();
+  expect(await page.evaluate(() => (window as unknown as { __port: { getLatex(): string } }).__port.getLatex())).toBe('7');
+  await page.getByRole('button', { name: '設定' }).click();
+  await page.locator('#settings').getByRole('button', { name: '閉じる' }).click();
+  await page.getByRole('button', { name: 'キーを編集' }).click();
+  await page.locator('[data-key-id="basic-02"]').click();
+  await page.locator('#key-editor').getByLabel('中央のLaTeX').fill('\\frac{1}{2}');
+  await expect(page.locator('#key-editor .preview').first()).not.toBeEmpty();
+  expect(violations).toEqual([]);
 });

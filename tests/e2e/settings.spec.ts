@@ -71,7 +71,7 @@ test('書き出したファイルを別プロファイルとして読み込め�
 
 test('壊れたファイルは読み込まず、何も変更しない', async ({ page }) => {
   await dialog(page).locator('input[type=file]').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{"oops":') });
-  await expect(dialog(page).locator('p.note')).toContainText('読み込めませんでした');
+  await expect(dialog(page).locator('[data-import-msg]')).toContainText('読み込めませんでした');
   expect(await dialog(page).getByLabel('使うプロファイル').locator('option').count()).toBe(1);
 });
 

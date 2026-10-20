@@ -234,7 +234,7 @@ export function mountSettings(dialog: HTMLDialogElement, ctx: SettingsContext) {
     const fileId = `s-${uid++}`;
     const file = el('input', { id: fileId, type: 'file', accept: 'application/json,.json', class: 'sr', 'aria-label': 'プロファイルのファイルを選ぶ', tabindex: '-1' }) as HTMLInputElement;
     const imp = el('button', { type: 'button', class: 'act' }, 'ファイルから読み込む');
-    const msg = el('p', { role: 'status', class: 'note' });
+    const msg = el('p', { role: 'status', class: 'note', 'data-import-msg': '' });
     imp.addEventListener('click', () => file.click());
     file.addEventListener('change', async () => {
       const f = file.files?.[0];

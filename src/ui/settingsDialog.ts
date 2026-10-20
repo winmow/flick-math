@@ -361,6 +361,7 @@ export function mountSettings(dialog: HTMLDialogElement, ctx: SettingsContext) {
       }),
     );
     dialog.append(sec);
+    dialog.append(el('p', { class: 'note', 'data-build': '' }, `アプリの版：${__BUILD_ID__}`));
     dialog.scrollTop = top;
     if (focusFid) dialog.querySelector<HTMLElement>(`[data-fid="${focusFid}"]`)?.focus();
   }

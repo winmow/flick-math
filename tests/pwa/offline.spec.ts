@@ -78,3 +78,12 @@ test('本番用のCSP(public/_headers)を付けても、画面・入力・設定
   await expect(page.locator('#key-editor .preview').first()).not.toBeEmpty();
   expect(violations).toEqual([]);
 });
+
+test('新しい版は待たずに有効になる設定で、設定画面に版が出る', async ({ page }) => {
+  const sw = readFileSync('dist/sw.js', 'utf8');
+  expect(sw).toMatch(/skipWaiting\(\)/);
+  expect(sw).toMatch(/clientsClaim\(\)|clients\.claim\(\)/);
+  await page.goto('/');
+  await page.getByRole('button', { name: '設定' }).click();
+  await expect(page.locator('#settings [data-build]')).toContainText(/アプリの版：[0-9a-f]{7} \(\d{4}-\d{2}-\d{2}\)/);
+});

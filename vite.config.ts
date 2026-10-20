@@ -1,9 +1,23 @@
+import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
 
+/** 画面に出す版の目印（どの版が表示されているか分かるように） */
+function buildId() {
+  let sha = process.env.GITHUB_SHA?.slice(0, 7);
+  try {
+    sha ??= execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch {
+    /* git がなければ日時だけ */
+  }
+  const day = new Date().toISOString().slice(0, 10);
+  return `${sha ?? 'dev'} (${day})`;
+}
+
 export default defineConfig({
   base: './',
+  define: { __BUILD_ID__: JSON.stringify(buildId()) },
   build: {
     rollupOptions: {
       // 本番のメニューには出さないが、URLを直接開けるように一緒にビルドする
@@ -12,7 +26,8 @@ export default defineConfig({
   },
   plugins: [
     VitePWA({
-      // 新しい版は、すべてのタブを閉じて開き直したときに有効になる（入力中に勝手に再読み込みしない）
+      // 新しい版は、見つかり次第Service Workerを入れ替える。ただし開いているページは再読み込みしない
+      // （入力中の数式が消えないように）。次に開いた・再読み込みしたときから新しい版になる
       registerType: 'prompt',
       injectRegister: false,
       includeAssets: ['icons/*.png', 'icons/icon.svg', 'fonts/*.woff2'],
@@ -33,6 +48,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,woff2,png,svg,webmanifest}'],
         navigateFallbackDenylist: [/\/dev\//],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,

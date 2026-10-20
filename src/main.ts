@@ -2,6 +2,8 @@ import { MathfieldElement } from 'mathlive';
 import './styles.css';
 import { defaultKeySet } from './logic/defaultKeyset';
 import { runAction, type ActionId } from './logic/editor';
+import { defaultSettings } from './logic/settings';
+import { mountKeypad } from './ui/keypad';
 import { mathfieldPort } from './ui/mathfieldPort';
 
 // フォントは同梱（CDN不使用）。MathLive標準の仮想キーボードは使わない。
@@ -34,7 +36,7 @@ app.innerHTML = `
       </div>
       <p class="sr" id="live" aria-live="polite"></p>
     </section>
-    <section aria-label="キーパッド"><p>タブ: ${defaultKeySet.tabs.map((t) => t.name).join('・')}（段階3で実装）</p></section>
+    <section class="pad" id="pad" aria-label="キーパッド"></section>
   </div>
 </div>`;
 
@@ -52,6 +54,15 @@ app.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
     live.textContent = runAction(port, btn.dataset.action as ActionId);
     mf.focus();
   });
+});
+
+mountKeypad(document.getElementById('pad')!, defaultKeySet, defaultSettings, {
+  onInsert: (item) => {
+    port.insert(item.latex);
+    live.textContent = '';
+    setTimeout(() => (live.textContent = `入力：${item.speak ?? item.label}`), 30);
+  },
+  announce: (t) => (live.textContent = t),
 });
 
 // テスト用に公開（E2E）

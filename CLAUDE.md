@@ -19,8 +19,10 @@
 - UI（DOM）と入力ロジック（フリック判定・挿入・キーセット処理）を分けて書く。ロジックは将来Wordアドインで使い回す
 - MathLiveのAPIはバージョンで変わるので、使う前に node_modules 内の型定義かドキュメントで確認する
 
-## コマンド（雛形作成後に更新する）
+## コマンド
 - `npm run dev` 開発サーバー
 - `npm test` ユニットテスト（Vitest）
-- `npm run test:e2e` E2E・アクセシビリティ検査（Playwright + axe-core）
-- `npm run build` 本番ビルド
+- `npm run test:e2e` E2E・アクセシビリティ検査（Playwright + axe-core、開発サーバーに対して）
+- `npm run test:pwa` 本番ビルドを配信して、オフライン起動・マニフェスト・外部通信なしを検査
+- `npm run build` 本番ビルド（PWAのService Workerも生成）
+- `npm run icons` 仮アイコンの再生成（`scripts/make-icons.mjs`。アプリ名・アイコンはSPEC §11の未決事項）

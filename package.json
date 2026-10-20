@@ -8,7 +8,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:pwa": "playwright test -c playwright.pwa.config.ts",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "mathlive": "^0.111.1"

@@ -1,4 +1,5 @@
 import { MathfieldElement } from 'mathlive';
+import { registerSW } from 'virtual:pwa-register';
 import 'mathlive/static.css';
 import './styles.css';
 import { defaultKeySet } from './logic/defaultKeyset';
@@ -201,3 +202,6 @@ apply();
 const w = window as unknown as { __port: typeof port; __settings: typeof settings };
 w.__port = port;
 w.__settings = settings;
+
+// オフライン動作のためのService Worker（開発サーバーでは動かない）
+if (import.meta.env.PROD) registerSW({ immediate: true });

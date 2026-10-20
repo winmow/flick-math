@@ -1,0 +1,28 @@
+:root{
+  --paper:#EEF3F4; --surface:#FFFFFF; --ink:#0D1D24; --muted:#4A5F68; --line:#AFC0C7;
+  --accent:#0B6B86; --accent-ink:#FFFFFF; --caret:#C2410C;
+  --key-h:84px; --radius:10px;
+  --f-ui:"BIZ UDPGothic","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E171B; --surface:#17242A; --ink:#E4EDF0; --muted:#9FB3BB; --line:#3A4D55;
+  --accent:#5BC2DD; --accent-ink:#04161C; --caret:#FB923C; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-ui);line-height:1.6;padding:16px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:16px}
+h1{font-size:1.45rem;margin:0}
+.main{display:grid;gap:20px}
+@media (min-width:900px){.main{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start}}
+.out{display:grid;gap:12px;min-width:0}
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:12px;min-width:0}
+math-field{display:block;width:100%;min-height:96px;font-size:calc(var(--math-scale,1.5) * 1em);
+  background:var(--surface);color:var(--ink);border:0;outline:0;
+  --caret-color:var(--caret);--selection-background-color:color-mix(in srgb,var(--accent) 30%,transparent)}
+math-field::part(menu-toggle),math-field::part(virtual-keyboard-toggle){display:none}
+.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.act{min-height:max(44px,calc(var(--key-h)*.66));font:inherit;font-size:1rem;font-weight:700;color:inherit;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);cursor:pointer;padding:4px;touch-action:manipulation}
+.act:active{transform:translateY(1px)}
+:focus-visible{outline:4px solid var(--caret);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.act:active{transform:none}}

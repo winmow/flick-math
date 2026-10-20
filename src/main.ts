@@ -66,4 +66,5 @@ mountKeypad(document.getElementById('pad')!, defaultKeySet, defaultSettings, {
 });
 
 // テスト用に公開（E2E）
-(window as unknown as { __port: typeof port }).__port = port;
+(window as unknown as { __port: typeof port; __settings: typeof defaultSettings }).__port = port;
+(window as unknown as { __settings: typeof defaultSettings }).__settings = defaultSettings;

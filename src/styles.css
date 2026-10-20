@@ -50,3 +50,11 @@ math-field::part(menu-toggle),math-field::part(virtual-keyboard-toggle){display:
 #bubble[hidden]{display:none}
 
 .key .d::after{content:attr(data-label)}
+
+dialog.chooser{border:1.5px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:16px;width:min(560px,calc(100vw - 32px))}
+dialog.chooser::backdrop{background:rgb(0 0 0 / .45)}
+.cross{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cross .opt{min-height:max(44px,calc(var(--key-h,84px)*.95));font:inherit;font-size:1.25rem;font-weight:700;color:inherit;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius);cursor:pointer;padding:4px}
+.cross .opt small{display:block;font-size:.72rem;font-weight:400;color:var(--muted)}
+.drow{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+.drow .act{min-width:120px}

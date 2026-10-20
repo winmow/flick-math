@@ -2,6 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 const latex = (page: Page) => page.evaluate(() => (window as unknown as { __port: { getLatex(): string } }).__port.getLatex());
+const setSettings = (page: Page, s: Record<string, unknown>) =>
+  page.evaluate((v) => Object.assign((window as unknown as { __settings: object }).__settings, v), s);
 const key = (page: Page, id: string) => page.locator(`[data-key-id="${id}"]`);
 
 async function flick(page: Page, id: string, dx: number, dy: number) {
@@ -18,6 +20,7 @@ async function flick(page: Page, id: string, dx: number, dy: number) {
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.locator('.key').first().waitFor();
+  await setSettings(page, { guardMs: 0 }); // 既定の連続タッチ無視は、個別のテストで確認する
 });
 
 test('タップで中央、フリックで各方向が入る', async ({ page }) => {
@@ -77,10 +80,11 @@ test('選択した状態で √ を押すと選択部分が中に入る', async 
   expect(await latex(page)).toBe('\\sqrt{x+1}');
 });
 
-test('キーボード(Enter)でも入力できる', async ({ page }) => {
+test('キーボード(Enter)では選択画面が開き、候補を選んで入力できる', async ({ page }) => {
   await key(page, 'basic-01').focus();
   await page.keyboard.press('Enter');
-  expect(await latex(page)).toBe('7');
+  await page.locator('dialog.chooser').getByRole('button', { name: /右 \)/ }).click();
+  expect(await latex(page)).toBe(')');
 });
 
 test('タブ切替ができる', async ({ page }) => {

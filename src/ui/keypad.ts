@@ -1,4 +1,5 @@
-import { DIRS, dirFrom, hasAnyItem, itemFor, keyAccessibleName } from '../logic/flick';
+import { isWithinGuard, judgeRelease } from '../logic/touchGuard';
+import { DIRS, DIR_NAMES, dirFrom, hasAnyItem, itemFor, keyAccessibleName } from '../logic/flick';
 import type { Settings } from '../logic/settings';
 import type { Dir, Key, KeyItem, KeySetFile } from '../logic/types';
 
@@ -16,12 +17,21 @@ interface Active {
   dir: Dir;
   el: HTMLButtonElement;
   key: Key;
+  downAt: number;
+  ignored: boolean;
+  moved: boolean;
+  consumed: boolean;
+  cancelled?: boolean;
+  timers: number[];
 }
+
+const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Settings, h: KeypadHandlers) {
   let tabId = keyset.tabs[0].id;
   let active: Active | null = null;
   let suppressClick = false;
+  let lastInputAt: number | null = null;
 
   root.innerHTML = `<div class="tabs" role="group" aria-label="キーの種類"></div><div class="grid"></div>`;
   const tabsEl = root.querySelector<HTMLElement>('.tabs')!;
@@ -105,12 +115,49 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
     bubble.style.top = `${Math.max(r.top - 8, bubble.offsetHeight + 8)}px`;
   }
 
+  // ---- 「タップして選ぶ」選択画面 ----
+  const dialog = document.createElement('dialog');
+  dialog.className = 'chooser';
+  dialog.setAttribute('aria-label', '入力する候補を選ぶ');
+  document.body.append(dialog);
+
+  function openChooser(key: Key) {
+    const cell = (d: Dir | null) => {
+      if (!d || !key[d]) return '<span class="gap"></span>';
+      const it = key[d]!;
+      return `<button type="button" class="opt" data-d="${d}" aria-label="${DIR_NAMES[d]} ${esc(it.speak ?? it.label)}">${esc(it.label)}<small>${DIR_NAMES[d]}</small></button>`;
+    };
+    dialog.innerHTML = `<div class="cross">
+      <span class="gap"></span>${cell('u')}<span class="gap"></span>
+      ${cell('l')}${cell('c')}${cell('r')}
+      <span class="gap"></span>${cell('d')}<span class="gap"></span></div>
+      <div class="drow"><button type="button" class="act" data-close>やめる</button></div>`;
+    dialog.querySelectorAll<HTMLButtonElement>('.opt').forEach((o) =>
+      o.addEventListener('click', () => {
+        dialog.close();
+        commit(key[o.dataset.d as Dir]!);
+      }),
+    );
+    dialog.querySelector('[data-close]')!.addEventListener('click', () => dialog.close());
+    dialog.showModal();
+  }
+
+  const candidates = (key: Key) => DIRS.filter((d) => key[d]).length;
+
+  function commit(item: KeyItem) {
+    lastInputAt = performance.now();
+    h.onInsert(item);
+  }
+
   function attach(b: HTMLButtonElement, key: Key) {
     b.addEventListener('pointerdown', (ev) => {
       ev.preventDefault(); // エディタのフォーカス・選択を保つ
       if (active || (ev.button !== undefined && ev.button !== 0)) return; // 2本目の指・手のひらは無視
       if (!hasAnyItem(key)) return;
-      active = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, dir: 'c', el: b, key };
+      const now = performance.now();
+      const ignored = isWithinGuard(now, lastInputAt, settings.guardMs);
+      active = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, dir: 'c', el: b, key, downAt: now, ignored, moved: false, consumed: false, timers: [] };
+      if (ignored) return;
       try {
         b.setPointerCapture(ev.pointerId); // 指がキー外に出ても判定を続ける
       } catch {
@@ -118,11 +165,32 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
       }
       b.classList.add('on');
       showBubble(active);
+      const a = active;
+      if (settings.mode === 'hold' && candidates(key) > 1) {
+        a.timers.push(
+          window.setTimeout(() => {
+            if (active !== a || a.moved) return;
+            a.consumed = true;
+            finish(a);
+            openChooser(key);
+          }, settings.holdMs),
+        );
+      } else if (settings.holdCancelMs > 0) {
+        a.timers.push(
+          window.setTimeout(() => {
+            if (active !== a) return;
+            a.cancelled = true;
+            bubble.textContent = '取りやめます';
+            bubble.classList.add('none');
+          }, settings.holdCancelMs),
+        );
+      }
     });
     b.addEventListener('pointermove', (ev) => {
-      if (!active || active.id !== ev.pointerId) return;
+      if (!active || active.ignored || active.id !== ev.pointerId || active.consumed) return;
       const d = dirFrom(ev.clientX - active.x, ev.clientY - active.y, settings.flickDistance);
-      if (d !== active.dir) {
+      if (d !== 'c') active.moved = true;
+      if (d !== active.dir && !active.cancelled) {
         active.dir = d;
         showBubble(active);
       }
@@ -130,14 +198,20 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
     const end = (ev: PointerEvent, cancel: boolean) => {
       if (!active || active.id !== ev.pointerId) return;
       const a = active;
-      active = null;
-      b.classList.remove('on');
-      bubble.hidden = true;
-      b.querySelectorAll('.hit').forEach((n) => n.classList.remove('hit'));
+      if (a.consumed) {
+        active = null;
+        suppressClick = true;
+        return;
+      }
+      finish(a);
       suppressClick = true;
-      if (cancel) return;
+      if (cancel || a.ignored) return;
+      const result = judgeRelease(performance.now() - a.downAt, settings.minPressMs, settings.mode === 'hold' ? 0 : settings.holdCancelMs);
+      if (result === 'cancelled') return h.announce('入力を取りやめました');
+      if (result === 'tooShort') return;
+      if (settings.mode === 'tap' && !a.moved && candidates(a.key) > 1) return openChooser(a.key);
       const item = itemFor(a.key, a.dir);
-      if (item) h.onInsert(item);
+      if (item) commit(item);
     };
     b.addEventListener('pointerup', (ev) => end(ev, false));
     b.addEventListener('pointercancel', (ev) => end(ev, true));
@@ -146,11 +220,22 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
         suppressClick = false;
         return;
       }
-      // キーボード(Enter/Space)・スイッチ操作。段階4で「タップして選ぶ」画面に置き換える
-      const item = itemFor(key, 'c');
-      if (item) h.onInsert(item);
+      // キーボード(Enter/Space)・スイッチ操作は「タップして選ぶ」と同じ動き
+      if (candidates(key) > 1) openChooser(key);
+      else {
+        const item = itemFor(key, 'c');
+        if (item) commit(item);
+      }
     });
     b.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  function finish(a: Active) {
+    a.timers.forEach(clearTimeout);
+    if (active === a) active = null;
+    a.el.classList.remove('on');
+    bubble.hidden = true;
+    a.el.querySelectorAll('.hit').forEach((n) => n.classList.remove('hit'));
   }
 
   applySettings();

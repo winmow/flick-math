@@ -1,3 +1,4 @@
+import { itemName } from '../logic/flick';
 import { isWithinGuard, judgeRelease } from '../logic/touchGuard';
 import { DIRS, DIR_NAMES, dirFrom, hasAnyItem, itemFor, keyAccessibleName } from '../logic/flick';
 import type { Settings } from '../logic/settings';
@@ -141,7 +142,9 @@ export function mountKeypad(root: HTMLElement, getTabs: () => Tab[], settings: S
     const cell = (d: Dir | null) => {
       if (!d || !key[d]) return '<span class="gap"></span>';
       const it = key[d]!;
-      return `<button type="button" class="opt" data-d="${d}" aria-label="${DIR_NAMES[d]} ${esc(it.speak ?? it.label)}">${esc(it.label)}<small>${DIR_NAMES[d]}</small></button>`;
+      // 見える文字（表示名＋方向）をそのまま名前にする。読み替えがあれば表示名を含めて補う
+      const name = `${itemName(it)} ${DIR_NAMES[d]}`;
+      return `<button type="button" class="opt" data-d="${d}" aria-label="${esc(name)}">${esc(it.label)} <small>${DIR_NAMES[d]}</small></button>`;
     };
     dialog.innerHTML = `<div class="cross">
       <span class="gap"></span>${cell('u')}<span class="gap"></span>

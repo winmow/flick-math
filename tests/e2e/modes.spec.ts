@@ -52,7 +52,7 @@ test('タップして選ぶ: タップで選択画面→候補を選ぶ', async 
   await press(page, 'basic-02');
   await expect(page.locator('dialog.chooser')).toBeVisible();
   expect(await latex(page)).toBe('');
-  await page.locator('dialog.chooser').getByRole('button', { name: '右 y' }).click();
+  await page.locator('dialog.chooser').getByRole('button', { name: 'y 右' }).click();
   expect(await latex(page)).toBe('y');
   await expect(page.locator('dialog.chooser')).toBeHidden();
 });
@@ -75,7 +75,7 @@ test('長押しで選ぶ: タップは中央、長押しで選択画面', async 
   await page.mouse.down();
   await expect(page.locator('dialog.chooser')).toBeVisible();
   await page.mouse.up();
-  await page.locator('dialog.chooser').getByRole('button', { name: '左 t' }).click();
+  await page.locator('dialog.chooser').getByRole('button', { name: 't 左' }).click();
   expect(await latex(page)).toBe('8t');
 });
 

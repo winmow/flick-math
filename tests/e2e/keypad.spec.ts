@@ -83,7 +83,7 @@ test('選択した状態で √ を押すと選択部分が中に入る', async 
 test('キーボード(Enter)では選択画面が開き、候補を選んで入力できる', async ({ page }) => {
   await key(page, 'basic-01').focus();
   await page.keyboard.press('Enter');
-  await page.locator('dialog.chooser').getByRole('button', { name: /右 \)/ }).click();
+  await page.locator('dialog.chooser').getByRole('button', { name: /^\) 右$/ }).click();
   expect(await latex(page)).toBe(')');
 });
 

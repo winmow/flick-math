@@ -38,6 +38,6 @@ describe('itemFor', () => {
   });
   it('アクセシブルネームに全方向を含める', () => {
     const k = { id: 'k', c: { label: '2', latex: '2' }, u: { label: '分数', latex: 'x', speak: 'ぶんすう' } };
-    expect(keyAccessibleName(k)).toBe('中央 2、上 ぶんすう');
+    expect(keyAccessibleName(k)).toBe('中央 2、上 ぶんすう（分数）');
   });
 });

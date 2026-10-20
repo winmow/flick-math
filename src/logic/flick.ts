@@ -24,10 +24,15 @@ export function itemFor(key: Key, dir: Dir): KeyItem | null {
   return key.c ?? key.u ?? key.r ?? key.d ?? key.l ?? null;
 }
 
+/** 候補の読み上げ名。読み替え(speak)があっても、画面の表示名を含める（WCAG 2.5.3 名前にラベルを含める） */
+export function itemName(item: KeyItem): string {
+  return item.speak && item.speak !== item.label ? `${item.speak}（${item.label}）` : item.label;
+}
+
 /** キーのアクセシブルネーム（全方向の候補を含める） */
 export function keyAccessibleName(key: Key): string {
   if (!hasAnyItem(key)) return '空きキー';
   return DIRS.filter((d) => key[d])
-    .map((d) => `${DIR_NAMES[d]} ${key[d]!.speak ?? key[d]!.label}`)
+    .map((d) => `${DIR_NAMES[d]} ${itemName(key[d]!)}`)
     .join('、');
 }

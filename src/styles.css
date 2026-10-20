@@ -129,3 +129,13 @@ table.wt{border-collapse:collapse;width:100%;font-size:.9rem}
 table.wt th,table.wt td{border:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}
 table.wt td:nth-child(5){max-width:260px;overflow-wrap:anywhere}
 table.wt select,table.wt input[type=text]{min-height:44px;font:inherit;color:inherit;background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:4px 8px;width:100%}
+
+/* 縦長・狭い画面：数式は上、キーパッドは画面下に固定（SPEC §3） */
+@media (max-width:899px){
+  .out > .panel:first-child{position:sticky;top:0;z-index:4}
+  .pad{position:sticky;bottom:0;z-index:5;max-height:72vh;overflow-y:auto;overscroll-behavior:contain;
+    background:var(--paper);border-top:1.5px solid var(--line);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px))}
+  body{padding-bottom:0}
+}
+/* ダイアログ内で、固定ヘッダーにフォーカス位置が隠れないようにする（WCAG 2.4.11） */
+dialog{scroll-padding-top:80px;scroll-padding-bottom:16px}

@@ -1,3 +1,4 @@
+import { emptyCustomization, sanitizeCustomization, type Customization } from './customize';
 import { defaultSettings, sanitizeSettings, type Settings } from './settings';
 
 /** プロファイル＝設定一式（段階6でカスタマイズしたキーセットの差分も加える） */
@@ -5,6 +6,7 @@ export interface Profile {
   id: string;
   name: string;
   settings: Settings;
+  custom: Customization;
 }
 
 export interface ProfilesState {
@@ -20,8 +22,8 @@ export function newId(): string {
   return `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-export function createProfile(name: string, settings: Settings = defaultSettings): Profile {
-  return { id: newId(), name: name.trim() || '名称なし', settings: { ...settings } };
+export function createProfile(name: string, settings: Settings = defaultSettings, custom: Customization = emptyCustomization()): Profile {
+  return { id: newId(), name: name.trim() || '名称なし', settings: { ...settings }, custom: structuredClone(custom) };
 }
 
 export function initialState(): ProfilesState {
@@ -38,6 +40,7 @@ export function parseState(raw: unknown): ProfilesState | null {
       id: String(p.id),
       name: String(p.name),
       settings: sanitizeSettings(p.settings),
+      custom: sanitizeCustomization(p.custom),
     }));
     const activeId = profiles.some((p) => p.id === d.activeId) ? (d.activeId as string) : profiles[0].id;
     return { version: 1, activeId, profiles };
@@ -57,10 +60,11 @@ export interface ProfileFile {
   version: number;
   name: string;
   settings: Settings;
+  custom: Customization;
 }
 
 export function exportProfile(p: Profile): string {
-  const f: ProfileFile = { app: APP_ID, version: FILE_VERSION, name: p.name, settings: p.settings };
+  const f: ProfileFile = { app: APP_ID, version: FILE_VERSION, name: p.name, settings: p.settings, custom: p.custom };
   return JSON.stringify(f, null, 2);
 }
 
@@ -89,7 +93,7 @@ export function importProfile(text: string): Profile {
   }
   if (typeof d.name !== 'string') throw new ImportError('プロファイル名がありません');
   try {
-    return createProfile(d.name, sanitizeSettings(d.settings));
+    return createProfile(d.name, sanitizeSettings(d.settings), sanitizeCustomization(d.custom));
   } catch (e) {
     throw new ImportError((e as Error).message);
   }

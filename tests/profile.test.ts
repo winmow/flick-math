@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultSettings, sanitizeSettings } from '../src/logic/settings';
+import { addTab, setKey } from '../src/logic/customize';
+import { defaultKeySet } from '../src/logic/defaultKeyset';
 import { createProfile, exportProfile, importProfile, ImportError, parseState, initialState } from '../src/logic/profile';
 
 describe('sanitizeSettings', () => {
@@ -28,6 +30,18 @@ describe('profile 書き出し/読み込み', () => {
     expect(q.name).toBe('Aさん用');
     expect(q.settings).toEqual(p.settings);
     expect(q.id).not.toBe(p.id); // 読み込みは新しいプロファイルとして追加される
+  });
+  it('カスタマイズ(キー編集・追加タブ)も一緒に往復する', () => {
+    const p = createProfile('B');
+    setKey(p.custom, 'basic-01', { c: { label: 'Z', latex: 'Z' } });
+    addTab(defaultKeySet, p.custom, '自分用');
+    const q = importProfile(exportProfile(p));
+    expect(q.custom).toEqual(p.custom);
+  });
+  it('customが無い古いファイルは空のカスタマイズで読める', () => {
+    const f = JSON.parse(exportProfile(createProfile('x')));
+    delete f.custom;
+    expect(importProfile(JSON.stringify(f)).custom.keyEdits).toEqual({});
   });
   it('壊れたファイルを拒否する', () => {
     for (const bad of ['', '{', '[]', '{"app":"other","version":1}', '{"app":"flick-math-profile","version":1,"name":"x","settings":{"keyHeight":"a"}}']) {

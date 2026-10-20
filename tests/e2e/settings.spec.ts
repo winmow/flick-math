@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
 const latex = (page: Page) => page.evaluate(() => (window as unknown as { __port: { getLatex(): string } }).__port.getLatex());
-const dialog = (page: Page) => page.locator('dialog.settings');
+const dialog = (page: Page) => page.locator('#settings');
 
 async function setRange(page: Page, label: string | RegExp, value: number) {
   const r = dialog(page).getByLabel(label);

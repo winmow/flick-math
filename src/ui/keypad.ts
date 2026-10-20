@@ -1,11 +1,13 @@
 import { isWithinGuard, judgeRelease } from '../logic/touchGuard';
 import { DIRS, DIR_NAMES, dirFrom, hasAnyItem, itemFor, keyAccessibleName } from '../logic/flick';
 import type { Settings } from '../logic/settings';
-import type { Dir, Key, KeyItem, KeySetFile } from '../logic/types';
+import type { Dir, Key, KeyItem, Tab } from '../logic/types';
 
 export interface KeypadHandlers {
   onInsert(item: KeyItem): void;
   announce(text: string): void;
+  onEditKey(tabId: string, key: Key): void;
+  onReorder(tabId: string, keyId: string, targetKeyId: string): void;
 }
 
 const CORNER_CLASS: Record<Exclude<Dir, 'c'>, string> = { u: 'u', r: 'r', d: 'dn', l: 'l' };
@@ -27,14 +29,27 @@ interface Active {
 
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
-export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Settings, h: KeypadHandlers) {
-  let tabId = keyset.tabs[0].id;
+export function mountKeypad(root: HTMLElement, getTabs: () => Tab[], settings: Settings, h: KeypadHandlers) {
+  let tabId = getTabs()[0].id;
+  let editing = false;
   let active: Active | null = null;
   let suppressClick = false;
   let lastInputAt: number | null = null;
 
-  root.innerHTML = `<div class="tabs" role="group" aria-label="キーの種類"></div><div class="grid"></div>`;
+  root.innerHTML = `<div class="tabs" role="group" aria-label="キーの種類"></div>
+    <div class="toolbar"><button type="button" class="edit-toggle" aria-pressed="false">キーを編集</button>
+    <span class="hint" id="edit-hint" hidden>キーを押すと編集できます。ドラッグで位置を入れ替えられます</span></div>
+    <div class="grid"></div>`;
   const tabsEl = root.querySelector<HTMLElement>('.tabs')!;
+  const editBtn = root.querySelector<HTMLButtonElement>('.edit-toggle')!;
+  const hint = root.querySelector<HTMLElement>('#edit-hint')!;
+  editBtn.addEventListener('click', () => {
+    editing = !editing;
+    editBtn.setAttribute('aria-pressed', String(editing));
+    root.classList.toggle('editing', editing);
+    hint.hidden = !editing;
+    h.announce(editing ? '編集モードにしました。キーを押すと編集画面が開きます' : '編集モードを終わりました');
+  });
   const grid = root.querySelector<HTMLElement>('.grid')!;
   const bubble = document.createElement('div');
   bubble.id = 'bubble';
@@ -48,8 +63,10 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
   };
 
   function drawTabs() {
+    const tabs = getTabs();
+    if (!tabs.some((t) => t.id === tabId)) tabId = tabs[0].id;
     tabsEl.replaceChildren();
-    for (const t of keyset.tabs) {
+    for (const t of tabs) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'tab';
@@ -66,7 +83,7 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
   }
 
   function drawGrid() {
-    const tab = keyset.tabs.find((t) => t.id === tabId)!;
+    const tab = getTabs().find((t) => t.id === tabId)!;
     grid.replaceChildren();
     for (const key of tab.keys) {
       const b = document.createElement('button');
@@ -96,7 +113,7 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
         }
       }
       b.setAttribute('aria-label', keyAccessibleName(key));
-      attach(b, key);
+      attach(b, key, tab.id);
       grid.append(b);
     }
   }
@@ -148,8 +165,41 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
     h.onInsert(item);
   }
 
-  function attach(b: HTMLButtonElement, key: Key) {
+  /** 編集モード：押すと編集画面、ドラッグすると位置の入れ替え */
+  function attachEdit(b: HTMLButtonElement, key: Key, tab: string) {
+    let start: { x: number; y: number; id: number; dragging: boolean } | null = null;
     b.addEventListener('pointerdown', (ev) => {
+      if (!editing || start) return;
+      ev.preventDefault();
+      start = { x: ev.clientX, y: ev.clientY, id: ev.pointerId, dragging: false };
+      b.setPointerCapture?.(ev.pointerId);
+    });
+    b.addEventListener('pointermove', (ev) => {
+      if (!start || start.id !== ev.pointerId) return;
+      if (!start.dragging && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) > 10) {
+        start.dragging = true;
+        b.classList.add('dragging');
+      }
+    });
+    const finishEdit = (ev: PointerEvent, cancel: boolean) => {
+      if (!start || start.id !== ev.pointerId) return;
+      const { dragging } = start;
+      start = null;
+      b.classList.remove('dragging');
+      suppressClick = true;
+      if (cancel) return;
+      if (!dragging) return h.onEditKey(tab, key);
+      const target = document.elementFromPoint(ev.clientX, ev.clientY)?.closest<HTMLElement>('.key');
+      if (target?.dataset.keyId && target.dataset.keyId !== key.id) h.onReorder(tab, key.id, target.dataset.keyId);
+    };
+    b.addEventListener('pointerup', (ev) => finishEdit(ev, false));
+    b.addEventListener('pointercancel', (ev) => finishEdit(ev, true));
+  }
+
+  function attach(b: HTMLButtonElement, key: Key, tab: string) {
+    attachEdit(b, key, tab);
+    b.addEventListener('pointerdown', (ev) => {
+      if (editing) return;
       ev.preventDefault(); // エディタのフォーカス・選択を保つ
       if (active || (ev.button !== undefined && ev.button !== 0)) return; // 2本目の指・手のひらは無視
       if (!hasAnyItem(key)) return;
@@ -219,6 +269,7 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
         suppressClick = false;
         return;
       }
+      if (editing) return h.onEditKey(tab, key); // キーボード操作での編集
       // キーボード(Enter/Space)・スイッチ操作は「タップして選ぶ」と同じ動き
       if (candidates(key) > 1) openChooser(key);
       else {
@@ -240,5 +291,13 @@ export function mountKeypad(root: HTMLElement, keyset: KeySetFile, settings: Set
   drawTabs();
   drawGrid();
   applySettings();
-  return { applySettings };
+  return {
+    applySettings,
+    /** カスタマイズが変わったあとの描き直し */
+    refresh: () => {
+      drawTabs();
+      drawGrid();
+      applySettings();
+    },
+  };
 }

@@ -1,12 +1,17 @@
 import { MathfieldElement } from 'mathlive';
+import 'mathlive/static.css';
 import './styles.css';
 import { defaultKeySet } from './logic/defaultKeyset';
 import { runAction, type ActionId } from './logic/editor';
 import { activeProfile } from './logic/profile';
 import { loadState, saveState } from './logic/storage';
+import { isDefaultKey, moveKey, moveKeyTo, resetKey, resolveTabs, setKey, visibleTabs, emptyCustomization } from './logic/customize';
+import { openKeyEditor } from './ui/keyEditor';
 import { mountSettings } from './ui/settingsDialog';
 import { applyAppSettings, feedback } from './ui/appSettings';
 import { mountKeypad } from './ui/keypad';
+import { DIRS } from './logic/flick';
+import type { Key, KeyItem } from './logic/types';
 import { mathfieldPort } from './ui/mathfieldPort';
 
 // フォントは同梱（CDN不使用）。MathLive標準の仮想キーボードは使わない。
@@ -45,7 +50,9 @@ app.innerHTML = `
     <section class="pad" id="pad" aria-label="キーパッド"></section>
   </div>
 </div>
-<dialog class="settings" id="settings"></dialog>`;
+<dialog class="settings" id="settings"></dialog>
+<dialog class="settings" id="key-editor"></dialog>
+<dialog class="settings" id="key-picker"></dialog>`;
 
 const mf = document.getElementById('mf') as MathfieldElement;
 const live = document.getElementById('live')!;
@@ -73,7 +80,50 @@ function persist() {
   saveState(state);
 }
 
-const keypad = mountKeypad(document.getElementById('pad')!, defaultKeySet, settings, {
+const custom = () => activeProfile(state).custom;
+
+function editKey(tabId: string, key: Key) {
+  const tabs = resolveTabs(defaultKeySet, custom());
+  const tab = tabs.find((t) => t.id === tabId)!;
+  const library = new Map<string, KeyItem>();
+  for (const t of tabs) for (const k of t.keys) for (const d of DIRS) if (k[d]) library.set(`${k[d]!.label}\u0000${k[d]!.latex}`, k[d]!);
+  openKeyEditor(document.getElementById('key-editor') as HTMLDialogElement, document.getElementById('key-picker') as HTMLDialogElement, {
+    key,
+    title: `${tab.name}タブの ${tab.keys.findIndex((k) => k.id === key.id) + 1} 番目のキー`,
+    canReset: true,
+    library: [...library.values()],
+    onSave: (body) => {
+      setKey(custom(), key.id, body);
+      customChanged();
+      live.textContent = 'キーを保存しました';
+    },
+    onReset: () => {
+      resetKey(defaultKeySet, custom(), key.id);
+      customChanged();
+      live.textContent = 'キーを初期状態に戻しました';
+    },
+    onMove: (delta) => {
+      const ok = moveKey(defaultKeySet, custom(), tabId, key.id, delta);
+      if (ok) customChanged();
+      return ok;
+    },
+    announce: (t) => (live.textContent = t),
+  });
+}
+
+function customChanged() {
+  persist();
+  keypad.refresh();
+}
+
+const keypad = mountKeypad(document.getElementById('pad')!, () => visibleTabs(defaultKeySet, custom()), settings, {
+  onEditKey: editKey,
+  onReorder: (tabId, keyId, targetId) => {
+    if (moveKeyTo(defaultKeySet, custom(), tabId, keyId, targetId)) {
+      customChanged();
+      live.textContent = 'キーの位置を入れ替えました';
+    }
+  },
   onInsert: (item) => {
     port.insert(item.latex);
     feedback(settings);
@@ -101,7 +151,14 @@ const dlg = mountSettings(document.getElementById('settings') as HTMLDialogEleme
   onProfileSwitch: () => {
     saveState(state);
     apply();
+    keypad.refresh();
   },
+  base: defaultKeySet,
+  getCustom: custom,
+  resetCustom: () => {
+    activeProfile(state).custom = emptyCustomization();
+  },
+  onCustomChange: customChanged,
   clearAll: () => port.clear(),
   announce: (t) => (live.textContent = t),
 });

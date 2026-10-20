@@ -91,3 +91,27 @@ dialog.settings::backdrop{background:rgb(0 0 0 / .45)}
 .btns{display:flex;flex-wrap:wrap;gap:var(--gap)}
 .btns .act,.sec>.act{min-height:48px;padding:6px 14px}
 .note{font-size:.9rem;margin:0;min-height:1.4em}
+
+/* 編集モード・キー編集 */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.toolbar .hint{font-size:.85rem;color:var(--muted)}
+.edit-toggle{min-height:44px;padding:4px 14px;font:inherit;font-weight:700;color:inherit;border:1.5px dashed var(--line);background:transparent;border-radius:8px;cursor:pointer}
+.edit-toggle[aria-pressed="true"]{border-style:solid;border-color:var(--caret);color:var(--caret)}
+.editing .key{border-style:dashed;border-color:var(--caret)}
+.key.dragging{opacity:.6;border-style:solid}
+.act.small{min-height:44px;padding:4px 12px;font-size:.9rem}
+.act.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.edit-rows{display:grid;gap:12px;margin:12px 0}
+fieldset.edit-row{display:grid;gap:6px;border:1.5px solid var(--line);border-radius:var(--radius);padding:8px 10px;margin:0;min-width:0}
+fieldset.edit-row legend{font-weight:700;padding:0 4px}
+fieldset.edit-row input[type=text]{min-height:44px;font:inherit;padding:6px 10px;color:inherit;background:var(--paper);border:1.5px solid var(--line);border-radius:8px;width:100%;min-width:0}
+fieldset.edit-row input.code{font-family:ui-monospace,Consolas,monospace}
+.preview{min-height:1.8em;overflow-x:auto}
+.problem{color:var(--caret);font-weight:700;margin:0;min-height:0}
+.search{width:100%;min-height:44px;font:inherit;padding:6px 10px;color:inherit;background:var(--paper);border:1.5px solid var(--line);border-radius:8px}
+.picker-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin:10px 0;max-height:50vh;overflow:auto}
+.picker-list .opt{min-height:56px;font:inherit;font-weight:700;color:inherit;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius);cursor:pointer;padding:4px;display:grid;gap:2px}
+.picker-list .opt small{font-weight:400;font-size:.7rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tab-row input[type=text]{flex:1 1 140px;min-height:44px;font:inherit;padding:6px 10px;color:inherit;background:var(--paper);border:1.5px solid var(--line);border-radius:8px}
+.tab-row input[type=checkbox]{width:28px;height:28px;margin:8px;accent-color:var(--accent)}

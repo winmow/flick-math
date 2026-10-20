@@ -1,3 +1,5 @@
+import { addTab, deleteTab, isDefaultTab, moveTab, renameTab, resolveTabs, setTabHidden, type Customization } from '../logic/customize';
+import type { KeySetFile } from '../logic/types';
 import { ImportError, activeProfile, createProfile, exportProfile, importProfile, type ProfilesState } from '../logic/profile';
 import { SETTING_RULES, defaultSettings, type Settings } from '../logic/settings';
 
@@ -6,6 +8,10 @@ export interface SettingsContext {
   settings: Settings; // 現在のプロファイルの設定（ライブ。変更はここへ書く）
   onChange(): void; // 設定が変わった（保存・反映）
   onProfileSwitch(): void; // 別のプロファイルに切り替えた
+  base: KeySetFile; // 初期キーセット
+  getCustom(): Customization; // 現在のプロファイルのカスタマイズ（ライブ）
+  resetCustom(): void; // キーとタブを初期状態へ
+  onCustomChange(): void; // タブ・キーが変わった（保存・描き直し）
   clearAll(): void; // 数式をすべて消す
   announce(text: string): void;
 }
@@ -138,15 +144,21 @@ export function mountSettings(dialog: HTMLDialogElement, ctx: SettingsContext) {
   function confirmButton(text: string, armedText: string, run: () => void) {
     const b = el('button', { type: 'button', class: 'act' }, text);
     let armed = false;
+    let idleLabel: string | null = null;
     b.addEventListener('click', () => {
       if (!armed) {
         armed = true;
         b.textContent = armedText;
+        if (b.hasAttribute('aria-label')) {
+          idleLabel = b.getAttribute('aria-label');
+          b.setAttribute('aria-label', armedText);
+        }
         ctx.announce(armedText);
         return;
       }
       armed = false;
       b.textContent = text;
+      if (idleLabel) b.setAttribute('aria-label', idleLabel);
       run();
     });
     return b;
@@ -247,8 +259,78 @@ export function mountSettings(dialog: HTMLDialogElement, ctx: SettingsContext) {
     return sec;
   }
 
-  function render() {
+  /** タブの管理（名前・並び順・表示/非表示・追加・削除）。変更のたびに描き直し、操作した部品に戻る */
+  function tabSection() {
+    const sec = el('section', { class: 'sec' });
+    sec.append(el('h3', {}, 'タブの管理'));
+    const c = ctx.getCustom();
+    const changed = (focusFid?: string) => {
+      ctx.onCustomChange();
+      render(focusFid);
+    };
+    for (const t of resolveTabs(ctx.base, c)) {
+      const row = el('div', { class: 'tab-row' });
+      const nameId = `s-${uid++}`;
+      const name = el('input', { id: nameId, type: 'text', autocomplete: 'off', 'aria-label': `${t.name}タブの名前`, 'data-fid': `name-${t.id}` }) as HTMLInputElement;
+      name.value = t.name;
+      name.addEventListener('change', () => {
+        renameTab(c, t.id, name.value);
+        changed(`name-${t.id}`);
+      });
+      const showId = `s-${uid++}`;
+      const show = el('input', { id: showId, type: 'checkbox', 'aria-label': `${t.name}タブを表示`, 'data-fid': `show-${t.id}` }) as HTMLInputElement;
+      show.checked = !c.hiddenTabs.includes(t.id);
+      show.addEventListener('change', () => {
+        if (!setTabHidden(ctx.base, c, t.id, !show.checked)) ctx.announce('最後の1つのタブは隠せません');
+        changed(`show-${t.id}`);
+      });
+      const showLabel = el('label', { for: showId, class: 'check' }, '表示');
+      const up = el('button', { type: 'button', class: 'act small', 'aria-label': `${t.name}タブを前へ`, 'data-fid': `up-${t.id}` }, '↑');
+      up.addEventListener('click', () => {
+        moveTab(ctx.base, c, t.id, -1);
+        changed(`up-${t.id}`);
+      });
+      const down = el('button', { type: 'button', class: 'act small', 'aria-label': `${t.name}タブを後ろへ`, 'data-fid': `down-${t.id}` }, '↓');
+      down.addEventListener('click', () => {
+        moveTab(ctx.base, c, t.id, 1);
+        changed(`down-${t.id}`);
+      });
+      row.append(name, show, showLabel, up, down);
+      if (!isDefaultTab(ctx.base, t.id)) {
+        const del = confirmButton('削除', `もう一度押すと「${t.name}」を削除`, () => {
+          if (!deleteTab(ctx.base, c, t.id)) ctx.announce('このタブは削除できません');
+          changed();
+        });
+        del.setAttribute('aria-label', `${t.name}タブを削除`);
+        row.append(del);
+      }
+      sec.append(row);
+    }
+    const addId = `s-${uid++}`;
+    const addRow = el('div', { class: 'row' });
+    const addName = el('input', { id: addId, type: 'text', autocomplete: 'off' }) as HTMLInputElement;
+    addName.placeholder = '例：理科';
+    const add = el('button', { type: 'button', class: 'act' }, 'タブを追加（空きキー16個）');
+    add.addEventListener('click', () => {
+      const t = addTab(ctx.base, c, addName.value);
+      ctx.announce(`タブ ${t.name} を追加しました。キーを編集で登録できます`);
+      changed();
+    });
+    addRow.append(el('label', { for: addId }, '追加するタブの名前'), addName);
+    sec.append(addRow, add);
+    sec.append(
+      confirmButton('キーとタブをすべて初期状態へ', 'もう一度押すと、編集内容がすべて消えます', () => {
+        ctx.resetCustom();
+        ctx.announce('キーとタブを初期状態に戻しました');
+        changed();
+      }),
+    );
+    return sec;
+  }
+
+  function render(focusFid?: string) {
     uid = 0;
+    const top = dialog.scrollTop;
     dialog.replaceChildren();
     const h = el('div', { class: 'dhead' });
     h.append(el('h2', { id: 'settings-title' }, '設定'));
@@ -268,6 +350,8 @@ export function mountSettings(dialog: HTMLDialogElement, ctx: SettingsContext) {
       dialog.append(sec);
     }
 
+    dialog.append(tabSection());
+
     const sec = el('section', { class: 'sec' });
     sec.append(el('h3', {}, '数式を消す'));
     sec.append(
@@ -277,6 +361,8 @@ export function mountSettings(dialog: HTMLDialogElement, ctx: SettingsContext) {
       }),
     );
     dialog.append(sec);
+    dialog.scrollTop = top;
+    if (focusFid) dialog.querySelector<HTMLElement>(`[data-fid="${focusFid}"]`)?.focus();
   }
 
   dialog.setAttribute('aria-labelledby', 'settings-title');
